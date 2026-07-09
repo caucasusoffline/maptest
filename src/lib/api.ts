@@ -65,10 +65,15 @@ const baseUrl = "https://raw.githubusercontent.com/caucasusoffline/maptest/main/
 async function fetchWithRetry(url: string, options?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
   try {
     const res = await fetch(url, options);
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error(`404 Not Found`);
+      }
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
     return res;
-  } catch (err) {
-    if (retries <= 0) throw err;
+  } catch (err: any) {
+    if (retries <= 0 || (err.message && err.message.includes('404'))) throw err;
     console.warn(`Fetch failed for ${url}. Retrying in ${delay}ms...`, err);
     await new Promise(resolve => setTimeout(resolve, delay));
     return fetchWithRetry(url, options, retries - 1, delay * 1.5);
@@ -176,45 +181,56 @@ async function loadPeriodData(type: string, periodId: string): Promise<LoadedPer
         fetchWithRetry(baseUrl + `georgia_${type}_${periodId}_agg.json`).catch(() => null)
       ]);
 
-      let points = null;
+      let points = { type: "FeatureCollection", features: [] };
       if (pointsRes) {
-        points = await pointsRes.json();
-        if (points && points.features) {
-          points.features.forEach((f: any, idx: number) => {
-            if (!f.properties.name) f.properties.name = `ზონა #${idx + 1}`;
-            f.properties.locations = 1;
-          });
+        try {
+          const parsed = await pointsRes.json();
+          if (parsed && parsed.features) {
+            points = parsed;
+            points.features.forEach((f: any, idx: number) => {
+              if (!f.properties.name) f.properties.name = `ზონა #${idx + 1}`;
+              f.properties.locations = 1;
+            });
+          }
+        } catch (e) {
+          console.error("Error parsing points json", e);
         }
       }
 
-      let aggData = null;
+      let aggData = { type: "FeatureCollection", features: [] };
       if (aggRes) {
-        const aggDict = await aggRes.json();
-        
-        // Map aggregate data onto the base municipality GeoJSON
-        const features = geoCache.rawMuni.features.map((m: any) => {
-          const muniName = m.properties.muni_name;
-          const stats = aggDict[muniName] || {
-            download: 0, download_max: 0, download_min: 0,
-            upload: 0, upload_max: 0, upload_min: 0,
-            ping: 0, ping_max: 0, ping_min: 0,
-            tests: 0, devices: 0, locations: 0
-          };
+        try {
+          const aggDict = await aggRes.json();
           
-          return {
-            ...m,
-            properties: {
-              ...m.properties,
-              name: muniName,
-              ...stats
-            }
-          };
-        });
+          // Map aggregate data onto the base municipality GeoJSON
+          if (geoCache.rawMuni && geoCache.rawMuni.features) {
+            const features = geoCache.rawMuni.features.map((m: any) => {
+              const muniName = m.properties.muni_name;
+              const stats = aggDict[muniName] || {
+                download: 0, download_max: 0, download_min: 0,
+                upload: 0, upload_max: 0, upload_min: 0,
+                ping: 0, ping_max: 0, ping_min: 0,
+                tests: 0, devices: 0, locations: 0
+              };
+              
+              return {
+                ...m,
+                properties: {
+                  ...m.properties,
+                  name: muniName,
+                  ...stats
+                }
+              };
+            });
 
-        aggData = {
-          type: "FeatureCollection",
-          features
-        };
+            aggData = {
+              type: "FeatureCollection",
+              features
+            };
+          }
+        } catch (e) {
+          console.error("Error parsing agg json", e);
+        }
       }
 
       geoCache.periods[cacheKey] = { points, agg: aggData, lastAccessed: Date.now() };
@@ -252,7 +268,10 @@ export async function getTrendApi(type: 'fixed' | 'mobile') {
         geoCache.trendPromises.fixed = fetchWithRetry(baseUrl + "trend_fixed.json")
           .then(res => res.json())
           .then(data => { geoCache.trendFixed = data; })
-          .catch(err => console.error("Failed to load fixed trends", err));
+          .catch(err => {
+            console.warn("Fixed trends not found, using empty data.");
+            geoCache.trendFixed = { national: [], municipalities: {} };
+          });
       }
       await geoCache.trendPromises.fixed;
     }
@@ -263,7 +282,10 @@ export async function getTrendApi(type: 'fixed' | 'mobile') {
         geoCache.trendPromises.mobile = fetchWithRetry(baseUrl + "trend_mobile.json")
           .then(res => res.json())
           .then(data => { geoCache.trendMobile = data; })
-          .catch(err => console.error("Failed to load mobile trends", err));
+          .catch(err => {
+            console.warn("Mobile trends not found, using empty data.");
+            geoCache.trendMobile = { national: [], municipalities: {} };
+          });
       }
       await geoCache.trendPromises.mobile;
     }
