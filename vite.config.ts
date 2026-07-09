@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(({ mode }) => {
   return {
-    base: mode === 'production' ? '/georgia-speedtest-map/' : '/',
+    base: mode === 'production' ? '/maptest/' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
