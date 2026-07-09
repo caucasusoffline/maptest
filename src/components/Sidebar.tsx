@@ -237,7 +237,7 @@ export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAvera
 
       {/* Context / Meta info */}
       <div className="mt-auto pt-4 border-t border-gray-700/50 text-[10px] text-gray-500 flex justify-between font-sans">
-        <span>© 2026 Ookla</span>
+        <span>© 2025 Ookla</span>
         <span>მონაცემები 2026 Q1</span>
       </div>
     </div>
