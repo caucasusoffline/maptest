@@ -1,0 +1,6 @@
+{
+  "name": "Ookla Speedtest Explorer - Georgia",
+  "description": "Interactive map visualization of internet speedtest data across Georgian municipalities.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
