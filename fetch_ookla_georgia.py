@@ -242,18 +242,18 @@ def process_period(network_type: str, period: Period, georgia_municipalities: gp
         agg_data = {}
         for muni, group in gdf_joined.groupby("muni_name"):
             agg_data[muni] = {
-                "download": round(group["download"].mean(), 1),
-                "download_min": round(group["download"].min(), 1),
-                "download_max": round(group["download"].max(), 1),
-                "upload": round(group["upload"].mean(), 1),
-                "upload_min": round(group["upload"].min(), 1),
-                "upload_max": round(group["upload"].max(), 1),
-                "ping": round(group["ping"].mean(), 0),
-                "ping_min": round(group["ping"].min(), 0),
-                "ping_max": round(group["ping"].max(), 0),
+                "download": float(round(group["download"].mean(), 1)),
+                "download_min": float(round(group["download"].min(), 1)),
+                "download_max": float(round(group["download"].max(), 1)),
+                "upload": float(round(group["upload"].mean(), 1)),
+                "upload_min": float(round(group["upload"].min(), 1)),
+                "upload_max": float(round(group["upload"].max(), 1)),
+                "ping": int(round(group["ping"].mean(), 0)),
+                "ping_min": int(round(group["ping"].min(), 0)),
+                "ping_max": int(round(group["ping"].max(), 0)),
                 "tests": int(group["tests"].sum()),
                 "devices": int(group["devices"].sum()),
-                "locations": len(group)
+                "locations": int(len(group))
             }
             
         with open(agg_file, "w", encoding="utf-8") as f:
@@ -289,8 +289,12 @@ def generate_trends(georgia_municipalities: gpd.GeoDataFrame) -> None:
             quarter_str = f"{year} {quarter}"
             timestamp = int(datetime.strptime(f"{year}-{q_to_month[quarter]}-01", "%Y-%m-%d").timestamp() * 1000)
             
-            with open(af, "r", encoding="utf-8") as f:
-                agg_data = json.load(f)
+            try:
+                with open(af, "r", encoding="utf-8") as f:
+                    agg_data = json.load(f)
+            except json.JSONDecodeError:
+                log.warning("⚠️ გამოტოვებულია დაზიანებული ფაილი: %s", af.name)
+                continue
                 
             tot_d = tot_u = tot_p = 0
             count = 0
