@@ -1,0 +1,86 @@
+name: Update Ookla Data
+
+on:
+  schedule:
+    # ყოველი კვარტლის 20 რიცხვს, 00:00 UTC-ზე (Ookla-ს მონაცემები
+    # ჩვეულებრივ კვარტლის დაწყებიდან 2-3 კვირაში ქვეყნდება)
+    - cron: '0 0 20 1,4,7,10 *'
+  workflow_dispatch:
+    inputs:
+      year:
+        description: 'წელი (მაგ. 2025). ცარიელი - უახლესი მონაცემებისთვის'
+        required: false
+        type: string
+      quarter:
+        description: 'კვარტალი (1, 2, 3 ან 4). ცარიელი - უახლესი მონაცემებისთვის'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+# არ დავუშვათ ორი გაშვება პარალელურად (scheduled + manual push conflict-ის თავიდან ასაცილებლად)
+concurrency:
+  group: ookla-data-update
+  cancel-in-progress: false
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate inputs
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          year="${{ github.event.inputs.year }}"
+          quarter="${{ github.event.inputs.quarter }}"
+          if [ -n "$year" ] && [ -z "$quarter" ]; then
+            echo "::error::თუ 'year' მითითებულია, 'quarter'-იც სავალდებულოა."
+            exit 1
+          fi
+          if [ -z "$year" ] && [ -n "$quarter" ]; then
+            echo "::error::თუ 'quarter' მითითებულია, 'year'-იც სავალდებულოა."
+            exit 1
+          fi
+
+      - name: Run script
+        run: |
+          if [ -n "${{ github.event.inputs.year }}" ] && [ -n "${{ github.event.inputs.quarter }}" ]; then
+            python fetch_ookla_georgia.py --year "${{ github.event.inputs.year }}" --quarter "${{ github.event.inputs.quarter }}"
+          else
+            python fetch_ookla_georgia.py
+          fi
+
+      - name: Commit and push
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          git add data/
+
+          if git diff --cached --quiet; then
+            echo "ცვლილება არ არის — commit არ დაგჭირდება."
+            exit 0
+          fi
+
+          git commit -m "Auto-update Georgia Ookla data ($(date -u +'%Y-%m-%d'))"
+
+          # push-ის წინ rebase, თუ remote-ზე ამასობაში ცვლილება მოხდა
+          for attempt in 1 2 3; do
+            git pull --rebase origin "${GITHUB_REF_NAME}" && git push && break
+            echo "Push ჩავარდა, ვცდით თავიდან... ($attempt/3)"
+            sleep 5
+          done
