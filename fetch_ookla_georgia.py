@@ -17,6 +17,7 @@ import argparse
 import json
 import logging
 import sys
+import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +36,7 @@ DATA_DIR = Path("data")
 LOCAL_BND_FILE = Path("municipality.geojson")
 
 # Georgia-ს დაახლოებითი bounding box
-MIN_LON, MIN_LAT, MAX_LON, MAX_LAT = 40.0, 41.0, 46.8, 43.6
+MIN_LON, MIN_LAT, MAX_LON, MAX_LAT = 39.5, 40.9, 47.0, 43.7
 
 S3_BUCKET = "ookla-open-data"
 S3_PREFIX = "parquet/performance"
@@ -214,17 +215,23 @@ def process_period(network_type: str, period: Period, georgia_municipalities: gp
         bbox_df["geometry"] = bbox_df["tile"].apply(wkt.loads)
         gdf = gpd.GeoDataFrame(bbox_df, geometry="geometry", crs="EPSG:4326")
 
-        # ზომის შემცირება: პოლიგონების გადაქცევა წერტილებად (Centroid) და დამრგვალება
-        gdf["geometry"] = gdf["geometry"].centroid
-        gdf.geometry = gpd.points_from_xy(gdf.geometry.x.round(5), gdf.geometry.y.round(5))
-
         log.info("  მიმდინარეობს საზღვრებთან დაკავშირება (sjoin)...")
-        # Spatial join - find which municipality each point belongs to
+        # Spatial join - ვიყენებთ პოლიგონებს, რათა საზღვარზე მყოფი კვადრატები არ დავკარგოთ
         gdf_joined = gpd.sjoin(gdf, georgia_municipalities[['muni_name', 'geometry']], how="inner", predicate="intersects")
 
         if gdf_joined.empty:
             log.warning("  ⚠️ საზღვრებში გადაკვეთა არ მოხდა.")
             return
+            
+        # ერთი კვადრატი შეიძლება ორ მუნიციპალიტეტს კვეთდეს. ვტოვებთ მხოლოდ ერთს (პირველს).
+        gdf_joined = gdf_joined.drop_duplicates(subset=["tile"])
+
+        # ზომის შემცირება: პოლიგონების გადაქცევა წერტილებად (Centroid) და დამრგვალება 5 ათწილადამდე
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            gdf_joined["geometry"] = gdf_joined["geometry"].centroid
+            
+        gdf_joined["geometry"] = gpd.points_from_xy(gdf_joined.geometry.x.round(5), gdf_joined.geometry.y.round(5))
 
         # გადაყვანა Mbps და მომზადება
         gdf_joined["download"] = (gdf_joined["avg_d_kbps"] / 1000).round(1)
@@ -297,13 +304,14 @@ def generate_trends(georgia_municipalities: gpd.GeoDataFrame) -> None:
                 continue
                 
             tot_d = tot_u = tot_p = 0
-            count = 0
+            tot_tests = 0
             for muni, stats in agg_data.items():
-                if stats.get("download", 0) > 0:
-                    tot_d += stats["download"]
-                    tot_u += stats["upload"]
-                    tot_p += stats["ping"]
-                    count += 1
+                tests = stats.get("tests", 0)
+                if stats.get("download", 0) > 0 and tests > 0:
+                    tot_d += stats["download"] * tests
+                    tot_u += stats["upload"] * tests
+                    tot_p += stats["ping"] * tests
+                    tot_tests += tests
                 
                 if muni in trend_data["municipalities"]:
                     trend_data["municipalities"][muni].append({
@@ -314,12 +322,12 @@ def generate_trends(georgia_municipalities: gpd.GeoDataFrame) -> None:
                         "timestamp": timestamp
                     })
                     
-            if count > 0:
+            if tot_tests > 0:
                 trend_data["national"].append({
                     "quarter": quarter_str,
-                    "download": round(tot_d / count, 1),
-                    "upload": round(tot_u / count, 1),
-                    "ping": round(tot_p / count, 0),
+                    "download": round(tot_d / tot_tests, 1),
+                    "upload": round(tot_u / tot_tests, 1),
+                    "ping": int(round(tot_p / tot_tests, 0)),
                     "timestamp": timestamp
                 })
                 
