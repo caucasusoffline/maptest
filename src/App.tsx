@@ -49,7 +49,7 @@ export default function App() {
     const controller = new AbortController();
 
     async function loadData() {
-      if (!selectedPeriod) return; // Wait for metadata to load
+      if (!selectedPeriod) return; // Wait for metadata to load 
 
       setIsLoading(true);
       try {
