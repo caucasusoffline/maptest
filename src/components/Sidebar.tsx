@@ -3,7 +3,7 @@ import { SpeedTestData } from "../types";
 import { getColor } from "../utils";
 import { ArrowDown, ArrowUp, MousePointer2, RadioTower, Activity, SatelliteDish } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface SidebarProps {
   selectedData: SpeedTestData | null;
@@ -11,9 +11,10 @@ interface SidebarProps {
   trendData?: any;
   activeMetric?: string;
   connectionType?: 'fixed' | 'mobile';
+  selectedPeriod?: string;
 }
 
-export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAverage, trendData, activeMetric = 'download', connectionType = 'fixed' }: SidebarProps) {
+export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAverage, trendData, activeMetric = 'download', connectionType = 'fixed', selectedPeriod }: SidebarProps) {
   const chartColor = activeMetric === 'download' ? '#10b981' : activeMetric === 'upload' ? '#3b82f6' : '#a855f7';
   const chartDataKey = activeMetric === 'download' ? 'download' : activeMetric === 'upload' ? 'upload' : 'ping';
   const chartLabel = activeMetric === 'download' ? 'ჩამოტვირთვა' : activeMetric === 'upload' ? 'ატვირთვა' : 'Ping';
@@ -27,16 +28,23 @@ export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAvera
     }
   }
 
+  const formatPeriodForChart = (p: string) => {
+    const match = p.match(/(\d{4})_(Q\d)/);
+    return match ? `${match[1]} ${match[2]}` : p;
+  };
+  
+  const currentFormattedPeriod = selectedPeriod ? formatPeriodForChart(selectedPeriod) : undefined;
+
   const renderTrendChart = () => {
     if (!currentTrend || currentTrend.length === 0) return null;
     return (
       <div className="mt-2 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50">
         <div className="text-xs text-gray-400 font-bold mb-2 uppercase flex items-center gap-1">
-          <Activity className="w-3 h-3" /> ტრენდი (2019-2026)
+          <Activity className="w-3 h-3 text-primary" /> ტრენდი (2019-2026)
         </div>
         <div className="h-32 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={currentTrend} margin={{ top: 5, right: 5, left: -5, bottom: 0 }}>
+            <LineChart data={currentTrend} margin={{ top: 10, right: 10, left: -5, bottom: 0 }}>
               <XAxis 
                 dataKey="quarter" 
                 tick={{fontSize: 9, fill: '#9ca3af'}} 
@@ -52,18 +60,24 @@ export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAvera
                 width={35}
               />
               <Tooltip 
-                contentStyle={{backgroundColor: '#1f2937', borderColor: '#374151', borderRadius: '8px', fontSize: '11px'}}
+                contentStyle={{backgroundColor: '#1f2937', borderColor: '#374151', borderRadius: '8px', fontSize: '11px', backdropFilter: 'blur(10px)'}}
                 itemStyle={{color: chartColor, fontWeight: 'bold'}}
                 formatter={(value: number) => [`${value.toFixed(1)} ${activeMetric === 'ping' ? 'ms' : 'Mbps'}`, chartLabel]}
                 labelStyle={{color: '#9ca3af', marginBottom: '4px'}}
+                cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
+              {currentFormattedPeriod && (
+                <ReferenceLine x={currentFormattedPeriod} stroke="rgba(255,255,255,0.2)" strokeDasharray="3 3" />
+              )}
               <Line 
                 type="monotone" 
                 dataKey={chartDataKey} 
                 stroke={chartColor} 
-                strokeWidth={2} 
-                dot={false}
-                activeDot={{ r: 4, fill: chartColor, stroke: '#fff', strokeWidth: 1 }}
+                strokeWidth={2.5} 
+                dot={{ r: 0 }}
+                activeDot={{ r: 5, fill: chartColor, stroke: '#fff', strokeWidth: 2 }}
+                animationDuration={1500}
+                animationEasing="ease-out"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -237,7 +251,7 @@ export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAvera
 
       {/* Context / Meta info */}
       <div className="mt-auto pt-4 border-t border-gray-700/50 text-[10px] text-gray-500 flex justify-between font-sans">
-        <span>© 2025 Ookla</span>
+        <span>© 2026 Ookla</span>
         <span>მონაცემები 2026 Q1</span>
       </div>
     </div>
