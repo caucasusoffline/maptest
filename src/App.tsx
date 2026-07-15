@@ -49,7 +49,7 @@ export default function App() {
     const controller = new AbortController();
 
     async function loadData() {
-      if (!selectedPeriod) return; // Wait for metadata to load 
+      if (!selectedPeriod) return; // Wait for metadata to load
 
       setIsLoading(true);
       try {
@@ -120,7 +120,7 @@ export default function App() {
   }, []);
 
   return (
-    <div className="flex flex-col w-full h-screen overflow-hidden bg-dark text-white font-sans">
+    <div className="flex flex-col w-full min-h-screen bg-dark text-white font-sans">
       {/* Desktop-Only Top Header */}
       <div className="hidden md:flex flex-col w-full shrink-0 z-[1001] bg-card">
         <HeaderCards 
@@ -184,7 +184,7 @@ export default function App() {
         </div>
       </div>
       
-      <div className="relative flex-1 w-full overflow-hidden flex flex-col">
+      <div className="relative flex-1 w-full flex flex-col">
         {isLoading && (
         <div className="absolute inset-0 z-[2000] bg-dark/80 backdrop-blur-sm flex flex-col items-center justify-center">
           <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
@@ -298,7 +298,7 @@ export default function App() {
 
       {/* Desktop-Only Metric Selector Tabs removed from here */}
       
-      <div className="relative flex-1 w-full min-h-0">
+      <div className="relative w-full h-[65vh] min-h-[400px] shrink-0 z-0">
         <MapComponent 
           geoData={displayData} 
           baseMuniData={baseMuniData}
