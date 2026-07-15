@@ -32,7 +32,8 @@ export default function App() {
     getMetadataApi()
       .then(meta => {
         if (meta && meta[connectionType]) {
-          const sorted = [...meta[connectionType]].sort();
+          const filtered = meta[connectionType].filter((p: string) => !p.includes('2018'));
+          const sorted = [...filtered].sort();
           setAvailablePeriods(sorted);
           if (!selectedPeriod || !sorted.includes(selectedPeriod)) {
             setSelectedPeriod(sorted[sorted.length - 1]);
@@ -148,6 +149,28 @@ export default function App() {
                 }`}
               >
                 მობილური
+              </button>
+            </div>
+            
+            {/* Metric Type Toggle */}
+            <div className="bg-card border border-white/10 rounded-lg p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0 h-full">
+              <button 
+                onClick={() => setActiveMetric('download')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-colors ${activeMetric === 'download' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+              >
+                ჩამოტვირთვა
+              </button>
+              <button 
+                onClick={() => setActiveMetric('upload')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-colors ${activeMetric === 'upload' ? 'bg-blue-500/20 text-blue-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+              >
+                ატვირთვა
+              </button>
+              <button 
+                onClick={() => setActiveMetric('ping')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-colors ${activeMetric === 'ping' ? 'bg-purple-500/20 text-purple-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+              >
+                Ping
               </button>
             </div>
           </div>
@@ -266,27 +289,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* Desktop-Only Metric Selector Tabs */}
-      <div className="absolute top-4 right-4 z-[1000] hidden md:flex bg-card rounded-xl p-1 gap-1 border border-white/10 shadow-xl backdrop-blur-xl font-sans">
-        <button 
-          onClick={() => setActiveMetric('download')}
-          className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeMetric === 'download' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
-        >
-          ჩამოტვირთვა
-        </button>
-        <button 
-          onClick={() => setActiveMetric('upload')}
-          className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeMetric === 'upload' ? 'bg-blue-500/20 text-blue-400 font-bold' : 'text-gray-400 hover:text-white'}`}
-        >
-          ატვირთვა
-        </button>
-        <button 
-          onClick={() => setActiveMetric('ping')}
-          className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeMetric === 'ping' ? 'bg-purple-500/20 text-purple-400 font-bold' : 'text-gray-400 hover:text-white'}`}
-        >
-          Ping
-        </button>
-      </div>
+      {/* Desktop-Only Metric Selector Tabs removed from here */}
 
       <Sidebar 
         selectedData={selectedData} 
