@@ -6,7 +6,7 @@ interface TimelineSliderProps {
   onSelectPeriod: (period: string) => void;
 }
 
-export function TimelineSlider({ periods, selectedPeriod, onSelectPeriod }: TimelineSliderProps) {
+export function TimelineSlider({ periods, selectedPeriod, onSelectPeriod, className }: TimelineSliderProps & { className?: string }) {
   if (!periods || periods.length === 0) return null;
 
   // Assume periods are sorted chronologically
@@ -26,8 +26,11 @@ export function TimelineSlider({ periods, selectedPeriod, onSelectPeriod }: Time
 
   const isLatest = currentIndex === periods.length - 1;
 
+  const defaultClasses = "absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] w-[90%] md:w-[600px] bg-card/95 border border-white/10 rounded-2xl p-3 shadow-2xl backdrop-blur-xl";
+  const containerClasses = className || defaultClasses;
+
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] w-[90%] md:w-[600px] bg-card/95 border border-white/10 rounded-2xl p-3 shadow-2xl backdrop-blur-xl font-sans flex items-center gap-4 text-white">
+    <div className={`${containerClasses} font-sans flex items-center gap-4 text-white`}>
       <div className="text-xs font-bold text-gray-400 uppercase tracking-widest shrink-0">
         კვარტალი
       </div>
