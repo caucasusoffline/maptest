@@ -72,9 +72,9 @@ export function BottomDashboard({
   const title = selectedMuni || 'საქართველო';
 
   return (
-    <div className="w-full h-[45vh] bg-[#0d1117] flex border-t border-white/10 z-[1000] text-white">
+    <div className="w-full h-[600px] md:h-[500px] bg-[#0d1117] flex flex-col md:flex-row border-t border-white/10 z-[1000] text-white">
       {/* Left Panel: Municipalities */}
-      <div className="w-[350px] border-r border-white/10 flex flex-col shrink-0 bg-[#0d1117]">
+      <div className="w-full md:w-[350px] border-r border-white/10 flex flex-col shrink-0 bg-[#0d1117]">
         <div className="p-4 border-b border-white/10 flex flex-col gap-4 shrink-0">
           <div className="flex items-center gap-2 font-bold text-lg">
             <MapIcon className="w-5 h-5 text-gray-400" />
@@ -139,7 +139,7 @@ export function BottomDashboard({
       </div>
 
       {/* Right Panel: Charts */}
-      <div className="flex-1 p-4 grid grid-cols-2 grid-rows-2 gap-4 bg-[#0d1117] overflow-y-auto min-h-0">
+      <div className="flex-1 p-4 grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-4 bg-[#0d1117] overflow-y-auto min-h-0">
         
         {/* Chart 1: Fixed Trend */}
         <div className="bg-[#161b22] border border-white/10 rounded-xl p-4 flex flex-col min-h-0">
