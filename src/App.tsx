@@ -32,9 +32,10 @@ export default function App() {
     getMetadataApi()
       .then(meta => {
         if (meta && meta[connectionType]) {
-          setAvailablePeriods(meta[connectionType]);
-          if (!selectedPeriod || !meta[connectionType].includes(selectedPeriod)) {
-            setSelectedPeriod(meta[connectionType][0]);
+          const sorted = [...meta[connectionType]].sort();
+          setAvailablePeriods(sorted);
+          if (!selectedPeriod || !sorted.includes(selectedPeriod)) {
+            setSelectedPeriod(sorted[sorted.length - 1]);
           }
         }
       })
@@ -122,13 +123,34 @@ export default function App() {
         />
         
         {/* Timeline Divider Area */}
-        <div className="w-full bg-[#111827] px-6 py-2 border-y border-[#1f2937] flex justify-center items-center shadow-md">
-          <TimelineSlider 
-            periods={availablePeriods}
-            selectedPeriod={selectedPeriod}
-            onSelectPeriod={setSelectedPeriod}
-            className="w-full bg-card border border-white/10 rounded-xl px-4 py-2 flex items-center gap-4 text-white"
-          />
+        <div className="w-full bg-[#111827] px-6 py-1.5 border-y border-[#1f2937] flex justify-center items-center shadow-md">
+          <div className="flex items-center gap-4 w-full max-w-7xl mx-auto">
+            <TimelineSlider 
+              periods={availablePeriods}
+              selectedPeriod={selectedPeriod}
+              onSelectPeriod={setSelectedPeriod}
+              className="flex-1 bg-card border border-white/10 rounded-lg px-4 py-1.5 flex items-center gap-4 text-white"
+            />
+            {/* Connection Type Toggle */}
+            <div className="bg-card border border-white/10 rounded-lg p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0 h-full">
+              <button
+                onClick={() => setConnectionType('fixed')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${
+                  connectionType === 'fixed' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                ფიქსირებული
+              </button>
+              <button
+                onClick={() => setConnectionType('mobile')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${
+                  connectionType === 'mobile' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                მობილური
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -239,26 +261,6 @@ export default function App() {
             >
               <Layers size={14} />
               წერტილები
-            </button>
-          </div>
-
-          {/* Connection Type Toggle */}
-          <div className="bg-card border border-white/10 rounded-xl p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0">
-            <button
-              onClick={() => setConnectionType('fixed')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                connectionType === 'fixed' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              ფიქსირებული
-            </button>
-            <button
-              onClick={() => setConnectionType('mobile')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                connectionType === 'mobile' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              მობილური
             </button>
           </div>
         </div>
