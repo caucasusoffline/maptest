@@ -113,13 +113,23 @@ export default function App() {
   return (
     <div className="flex flex-col w-full h-screen overflow-hidden bg-dark text-white font-sans">
       {/* Desktop-Only Top Header */}
-      <div className="hidden md:block w-full shrink-0 z-[1001] bg-card border-b border-white/10">
+      <div className="hidden md:flex flex-col w-full shrink-0 z-[1001] bg-card">
         <HeaderCards 
-          data={selectedData || nationalAverage} 
+          data={nationalAverage} 
           trendData={trendData} 
           selectedPeriod={selectedPeriod} 
-          isNational={!selectedData} 
+          isNational={true} 
         />
+        
+        {/* Timeline Divider Area */}
+        <div className="w-full bg-[#111827] px-6 py-2 border-y border-[#1f2937] flex justify-center items-center shadow-md">
+          <TimelineSlider 
+            periods={availablePeriods}
+            selectedPeriod={selectedPeriod}
+            onSelectPeriod={setSelectedPeriod}
+            className="w-full bg-card border border-white/10 rounded-xl px-4 py-2 flex items-center gap-4 text-white"
+          />
+        </div>
       </div>
       
       <div className="relative flex-1 w-full overflow-hidden">
@@ -299,12 +309,6 @@ export default function App() {
       />
       
       <Legend activeMetric={activeMetric} connectionType={activeSettings.connectionType as 'fixed' | 'mobile'} />
-      
-      <TimelineSlider 
-        periods={availablePeriods}
-        selectedPeriod={selectedPeriod}
-        onSelectPeriod={setSelectedPeriod}
-      />
       </div>
     </div>
   );
