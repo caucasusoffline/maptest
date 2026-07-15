@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { Legend } from "./components/Legend";
 import { MapComponent } from "./components/MapComponent";
+import { TimelineSlider } from "./components/TimelineSlider";
 import { MunicipalityFeature, SpeedTestData, MetricType } from "./types";
 import { fetchGeoData, getNationalAverage } from "./utils";
 import { Layers } from "lucide-react";
@@ -187,20 +188,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* Period dropdown */}
-          {availablePeriods.length > 0 && (
-            <select 
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="bg-slate-800/60 border border-white/10 rounded-lg py-1 px-1.5 text-[9px] font-bold focus:outline-none focus:border-primary/50 shadow-md font-sans text-white cursor-pointer shrink-0 w-[75px]"
-            >
-              {availablePeriods.map(period => {
-                const match = period.match(/(\d{4})_(Q\d)/);
-                const label = match ? `${match[1]} ${match[2]}` : period;
-                return <option key={period} value={period}>{label}</option>;
-              })}
-            </select>
-          )}
+          {/* Period dropdown removed from mobile view */}
         </div>
       </div>
 
@@ -250,20 +238,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* Period Dropdown */}
-          {availablePeriods.length > 0 && (
-            <select 
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="bg-card border border-white/10 rounded-xl py-1.5 px-3 text-xs font-semibold focus:outline-none focus:border-primary/50 shadow-xl backdrop-blur-xl font-sans text-white cursor-pointer shrink-0"
-            >
-              {availablePeriods.map(period => {
-                const match = period.match(/(\d{4})_(Q\d)/);
-                const label = match ? `${match[1]} ${match[2]}` : period;
-                return <option key={period} value={period}>{label}</option>;
-              })}
-            </select>
-          )}
+          {/* Period Dropdown removed from desktop view */}
         </div>
       </div>
 
@@ -295,6 +270,7 @@ export default function App() {
         trendData={trendData}
         activeMetric={activeMetric}
         connectionType={activeSettings.connectionType as 'fixed' | 'mobile'}
+        selectedPeriod={selectedPeriod}
       />
       
       <MapComponent 
@@ -311,6 +287,12 @@ export default function App() {
       />
       
       <Legend activeMetric={activeMetric} connectionType={activeSettings.connectionType as 'fixed' | 'mobile'} />
+      
+      <TimelineSlider 
+        periods={availablePeriods}
+        selectedPeriod={selectedPeriod}
+        onSelectPeriod={setSelectedPeriod}
+      />
     </div>
   );
 }
