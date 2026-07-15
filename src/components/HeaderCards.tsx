@@ -74,11 +74,11 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
   const strokeDashoffset = circumference - (dlPercent / 100) * circumference;
 
   return (
-    <div className="flex flex-row items-center justify-between w-full bg-card px-6 py-2 gap-4 overflow-x-auto">
+    <div className="flex flex-row items-center justify-between w-full bg-card px-6 py-1 gap-4 overflow-x-auto">
       
       {/* Title & Circular Gauge */}
       <div className="flex items-center gap-3 shrink-0">
-        <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+        <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
             <circle
               cx="40"
@@ -86,7 +86,7 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
               r="30"
               fill="transparent"
               stroke="rgba(255,255,255,0.1)"
-              strokeWidth="6"
+              strokeWidth="5"
             />
             <circle
               cx="40"
@@ -94,7 +94,7 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
               r="30"
               fill="transparent"
               stroke="#10b981"
-              strokeWidth="6"
+              strokeWidth="5"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
@@ -103,81 +103,81 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center mt-0.5">
             <span className="text-sm font-bold text-white leading-none">{Math.round(data.download)}</span>
-            <span className="text-[8px] text-gray-400 font-semibold">Mbps</span>
+            <span className="text-[7px] text-gray-400 font-semibold mt-0.5">Mbps</span>
           </div>
         </div>
         
         <div className="flex flex-col justify-center">
-          <h2 className="text-lg md:text-xl font-black text-white tracking-tight font-serif italic leading-tight">
+          <h2 className="text-base md:text-lg font-black text-white tracking-tight font-serif italic leading-none">
             {isNational ? "საქართველოს" : data.name}
           </h2>
-          <span className="text-xs font-bold text-gray-400 leading-tight">Speedtest დაშბორდი</span>
+          <span className="text-[10px] font-bold text-gray-400 leading-tight mt-0.5">Speedtest დაშბორდი</span>
         </div>
       </div>
 
-      <div className="w-px h-10 bg-white/10 mx-2 shrink-0 hidden md:block"></div>
+      <div className="w-px h-8 bg-white/10 mx-2 shrink-0 hidden md:block"></div>
 
       {/* Cards */}
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[130px] flex flex-col justify-center">
-          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-            <Download size={10} className="text-emerald-400" />
+      <div className="flex items-center gap-1.5 shrink-0">
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-2.5 py-1 w-[120px] flex flex-col justify-center">
+          <div className="flex items-center gap-1 text-[8px] text-gray-400 font-bold uppercase">
+            <Download size={8} className="text-emerald-400" />
             ჩამოტვირთვა
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-base font-black text-emerald-400 leading-none">
-              {data.download.toFixed(1)} <span className="text-[10px] font-bold">Mbps</span>
+            <span className="text-sm font-black text-emerald-400 leading-none">
+              {data.download.toFixed(1)} <span className="text-[9px] font-bold">Mbps</span>
             </span>
           </div>
           <div className="mt-0.5">{renderYoY(yoyData?.download)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[130px] flex flex-col justify-center">
-          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-            <Upload size={10} className="text-blue-400" />
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-2.5 py-1 w-[120px] flex flex-col justify-center">
+          <div className="flex items-center gap-1 text-[8px] text-gray-400 font-bold uppercase">
+            <Upload size={8} className="text-blue-400" />
             ატვირთვა
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-base font-black text-blue-400 leading-none">
-              {data.upload.toFixed(1)} <span className="text-[10px] font-bold">Mbps</span>
+            <span className="text-sm font-black text-blue-400 leading-none">
+              {data.upload.toFixed(1)} <span className="text-[9px] font-bold">Mbps</span>
             </span>
           </div>
           <div className="mt-0.5">{renderYoY(yoyData?.upload)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[130px] flex flex-col justify-center">
-          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-            <Activity size={10} className="text-purple-400" />
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-2.5 py-1 w-[120px] flex flex-col justify-center">
+          <div className="flex items-center gap-1 text-[8px] text-gray-400 font-bold uppercase">
+            <Activity size={8} className="text-purple-400" />
             PING
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-base font-black text-purple-400 leading-none">
-              {Math.round(data.ping)} <span className="text-[10px] font-bold">ms</span>
+            <span className="text-sm font-black text-purple-400 leading-none">
+              {Math.round(data.ping)} <span className="text-[9px] font-bold">ms</span>
             </span>
           </div>
           <div className="mt-0.5">{renderYoY(yoyData?.ping, true)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[110px] flex flex-col justify-center">
-          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-            <Hash size={10} className="text-orange-400" />
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-2.5 py-1 w-[100px] flex flex-col justify-center">
+          <div className="flex items-center gap-1 text-[8px] text-gray-400 font-bold uppercase">
+            <Hash size={8} className="text-orange-400" />
             ტესტები
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-base font-black text-orange-400 leading-none">
+            <span className="text-sm font-black text-orange-400 leading-none">
               {data.tests.toLocaleString()}
             </span>
           </div>
         </div>
 
         {data.devices !== undefined && (
-          <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[110px] flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-              <Laptop size={10} className="text-cyan-400" />
+          <div className="bg-slate-800/50 border border-white/5 rounded-lg px-2.5 py-1 w-[100px] flex flex-col justify-center">
+            <div className="flex items-center gap-1 text-[8px] text-gray-400 font-bold uppercase">
+              <Laptop size={8} className="text-cyan-400" />
               მოწყ.
             </div>
             <div className="flex items-baseline gap-1 mt-0.5">
-              <span className="text-base font-black text-cyan-400 leading-none">
+              <span className="text-sm font-black text-cyan-400 leading-none">
                 {data.devices.toLocaleString()}
               </span>
             </div>
