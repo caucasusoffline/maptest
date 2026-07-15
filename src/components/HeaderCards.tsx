@@ -74,7 +74,7 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
   const strokeDashoffset = circumference - (dlPercent / 100) * circumference;
 
   return (
-    <div className="flex flex-row items-center justify-between w-full bg-card/95 border border-white/10 rounded-2xl p-4 shadow-2xl backdrop-blur-xl gap-4 overflow-x-auto">
+    <div className="flex flex-row items-center justify-between w-full bg-card px-6 py-4 gap-4 overflow-x-auto">
       
       {/* Title & Circular Gauge */}
       <div className="flex items-center gap-4 shrink-0">
