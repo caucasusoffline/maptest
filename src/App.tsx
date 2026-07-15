@@ -3,6 +3,7 @@ import { Sidebar } from "./components/Sidebar";
 import { Legend } from "./components/Legend";
 import { MapComponent } from "./components/MapComponent";
 import { TimelineSlider } from "./components/TimelineSlider";
+import { HeaderCards } from "./components/HeaderCards";
 import { MunicipalityFeature, SpeedTestData, MetricType } from "./types";
 import { fetchGeoData, getNationalAverage } from "./utils";
 import { Layers } from "lucide-react";
@@ -192,8 +193,20 @@ export default function App() {
         </div>
       </div>
 
+      {/* Desktop-Only Header Cards */}
+      <div className="absolute top-4 left-[330px] right-4 z-[999] hidden md:flex items-start justify-start pointer-events-none">
+        <div className="pointer-events-auto w-full">
+          <HeaderCards 
+            data={selectedData || nationalAverage} 
+            trendData={trendData} 
+            selectedPeriod={selectedPeriod} 
+            isNational={!selectedData} 
+          />
+        </div>
+      </div>
+
       {/* Desktop-Only Cohesive Controls */}
-      <div className="absolute top-4 left-[330px] z-[1000] hidden md:flex flex-row items-center gap-3 pointer-events-none">
+      <div className="absolute top-[130px] left-[330px] z-[1000] hidden md:flex flex-row items-center gap-3 pointer-events-none">
         <div className="flex gap-2 pointer-events-auto">
           {/* View Type Toggle */}
           <div className="bg-card border border-white/10 rounded-xl p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0">
@@ -237,13 +250,11 @@ export default function App() {
               მობილური
             </button>
           </div>
-
-          {/* Period Dropdown removed from desktop view */}
         </div>
       </div>
 
       {/* Desktop-Only Metric Selector Tabs */}
-      <div className="absolute top-4 right-4 z-[1000] hidden md:flex bg-card rounded-xl p-1 gap-1 border border-white/10 shadow-xl backdrop-blur-xl font-sans">
+      <div className="absolute top-[130px] right-4 z-[1000] hidden md:flex bg-card rounded-xl p-1 gap-1 border border-white/10 shadow-xl backdrop-blur-xl font-sans">
         <button 
           onClick={() => setActiveMetric('download')}
           className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeMetric === 'download' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
