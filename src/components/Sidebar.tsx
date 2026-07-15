@@ -54,10 +54,10 @@ export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAvera
               <YAxis 
                 domain={['auto', 'auto']} 
                 tick={{fontSize: 9, fill: '#9ca3af'}}
-                tickFormatter={(val) => `${Math.round(val)}${activeMetric === 'ping' ? 'ms' : 'Mbps'}`}
+                tickFormatter={(val) => `${Math.round(val)} ${activeMetric === 'ping' ? 'ms' : 'Mbps'}`}
                 axisLine={false}
                 tickLine={false}
-                width={35}
+                width={50}
               />
               <Tooltip 
                 contentStyle={{backgroundColor: '#1f2937', borderColor: '#374151', borderRadius: '8px', fontSize: '11px', backdropFilter: 'blur(10px)'}}
