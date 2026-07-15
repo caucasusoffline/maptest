@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { SpeedTestData } from '../types';
-import { ArrowDown, ArrowUp, Activity, Hash, Laptop } from 'lucide-react';
+import { Download, Upload, Activity, Hash, Laptop } from 'lucide-react';
 
 interface HeaderCardsProps {
   data: SpeedTestData | null;
@@ -119,9 +119,9 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
 
       {/* Cards */}
       <div className="flex items-center gap-2 shrink-0">
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[130px] flex flex-col justify-center">
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[130px] flex flex-col justify-center">
           <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-            <ArrowDown size={10} className="text-emerald-400" />
+            <Download size={10} className="text-emerald-400" />
             ჩამოტვირთვა
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
@@ -132,9 +132,9 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
           <div className="mt-0.5">{renderYoY(yoyData?.download)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[130px] flex flex-col justify-center">
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[130px] flex flex-col justify-center">
           <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
-            <ArrowUp size={10} className="text-blue-400" />
+            <Upload size={10} className="text-blue-400" />
             ატვირთვა
           </div>
           <div className="flex items-baseline gap-1 mt-0.5">
@@ -145,7 +145,7 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
           <div className="mt-0.5">{renderYoY(yoyData?.upload)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[130px] flex flex-col justify-center">
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[130px] flex flex-col justify-center">
           <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
             <Activity size={10} className="text-purple-400" />
             PING
@@ -158,7 +158,7 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
           <div className="mt-0.5">{renderYoY(yoyData?.ping, true)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[110px] flex flex-col justify-center">
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[110px] flex flex-col justify-center">
           <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
             <Hash size={10} className="text-orange-400" />
             ტესტები
@@ -171,7 +171,7 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
         </div>
 
         {data.devices !== undefined && (
-          <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[110px] flex flex-col justify-center">
+          <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1 w-[110px] flex flex-col justify-center">
             <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
               <Laptop size={10} className="text-cyan-400" />
               მოწყ.
