@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Sidebar } from "./components/Sidebar";
+import { BottomDashboard } from "./components/BottomDashboard";
 import { Legend } from "./components/Legend";
 import { MapComponent } from "./components/MapComponent";
 import { TimelineSlider } from "./components/TimelineSlider";
@@ -25,7 +25,8 @@ export default function App() {
   const [nationalAverage, setNationalAverage] = useState<SpeedTestData | null>(null);
   const [availablePeriods, setAvailablePeriods] = useState<string[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('');
-  const [trendData, setTrendData] = useState<any>(null);
+  const [trendFixed, setTrendFixed] = useState<any>(null);
+  const [trendMobile, setTrendMobile] = useState<any>(null);
 
   // Fetch metadata once
   useEffect(() => {
@@ -69,8 +70,14 @@ export default function App() {
         
         // Fetch trend data
         try {
-          const trend = await getTrendApi(connectionType);
-          if (!ignore && trend) setTrendData(trend);
+          const [tFixed, tMobile] = await Promise.all([
+            getTrendApi('fixed').catch(() => null),
+            getTrendApi('mobile').catch(() => null)
+          ]);
+          if (!ignore) {
+            setTrendFixed(tFixed);
+            setTrendMobile(tMobile);
+          }
         } catch (e) {
           console.error("Trend endpoint error", e);
         }
@@ -118,7 +125,7 @@ export default function App() {
       <div className="hidden md:flex flex-col w-full shrink-0 z-[1001] bg-card">
         <HeaderCards 
           data={nationalAverage} 
-          trendData={trendData} 
+          trendData={connectionType === 'fixed' ? trendFixed : trendMobile} 
           selectedPeriod={selectedPeriod} 
           isNational={true} 
         />
@@ -177,7 +184,7 @@ export default function App() {
         </div>
       </div>
       
-      <div className="relative flex-1 w-full overflow-hidden">
+      <div className="relative flex-1 w-full overflow-hidden flex flex-col">
         {isLoading && (
         <div className="absolute inset-0 z-[2000] bg-dark/80 backdrop-blur-sm flex flex-col items-center justify-center">
           <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
@@ -290,30 +297,33 @@ export default function App() {
       </div>
 
       {/* Desktop-Only Metric Selector Tabs removed from here */}
-
-      <Sidebar 
-        selectedData={selectedData} 
-        nationalAverage={nationalAverage}
-        trendData={trendData}
-        activeMetric={activeMetric}
-        connectionType={activeSettings.connectionType as 'fixed' | 'mobile'}
-        selectedPeriod={selectedPeriod}
-      />
       
-      <MapComponent 
-        geoData={displayData} 
-        baseMuniData={baseMuniData}
-        dataVersion={dataVersion}
-        onFeatureHover={handleFeatureHover} 
-        onFeatureOut={handleFeatureOut} 
-        activeMetric={activeMetric}
-        selectedFeatureName={selectedDataName || undefined}
-        zoomBounds={zoomBounds}
-        viewType={activeSettings.viewType as 'municipality' | 'points'}
-        connectionType={activeSettings.connectionType as 'fixed' | 'mobile'}
-      />
+      <div className="relative flex-1 w-full min-h-0">
+        <MapComponent 
+          geoData={displayData} 
+          baseMuniData={baseMuniData}
+          dataVersion={dataVersion}
+          onFeatureHover={handleFeatureHover} 
+          onFeatureOut={handleFeatureOut} 
+          activeMetric={activeMetric}
+          selectedFeatureName={selectedDataName || undefined}
+          zoomBounds={zoomBounds}
+          viewType={activeSettings.viewType as 'municipality' | 'points'}
+          connectionType={activeSettings.connectionType as 'fixed' | 'mobile'}
+        />
+        
+        <Legend activeMetric={activeMetric} connectionType={activeSettings.connectionType as 'fixed' | 'mobile'} />
+      </div>
       
-      <Legend activeMetric={activeMetric} connectionType={activeSettings.connectionType as 'fixed' | 'mobile'} />
+      <BottomDashboard 
+        geoData={displayData}
+        trendFixed={trendFixed}
+        trendMobile={trendMobile}
+        selectedMuni={selectedDataName}
+        onSelectMuni={setSelectedDataName}
+        connectionType={connectionType}
+        setConnectionType={setConnectionType}
+      />
       </div>
     </div>
   );
