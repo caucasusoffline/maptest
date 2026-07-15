@@ -54,7 +54,7 @@ export const Sidebar = React.memo(function Sidebar({ selectedData, nationalAvera
               <YAxis 
                 domain={['auto', 'auto']} 
                 tick={{fontSize: 9, fill: '#9ca3af'}}
-                tickFormatter={(val) => `${Math.round(val)}${activeMetric === 'ping' ? 'ms' : 'მბ'}`}
+                tickFormatter={(val) => `${Math.round(val)}${activeMetric === 'ping' ? 'ms' : 'Mbps'}`}
                 axisLine={false}
                 tickLine={false}
                 width={35}
