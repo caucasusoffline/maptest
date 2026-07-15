@@ -69,115 +69,115 @@ export function HeaderCards({ data, trendData, selectedPeriod, isNational }: Hea
     );
   };
 
-  const circumference = 2 * Math.PI * 40;
+  const circumference = 2 * Math.PI * 30;
   const dlPercent = Math.min(Math.max((data.download / 100) * 100, 0), 100);
   const strokeDashoffset = circumference - (dlPercent / 100) * circumference;
 
   return (
-    <div className="flex flex-row items-center justify-between w-full bg-card px-6 py-4 gap-4 overflow-x-auto">
+    <div className="flex flex-row items-center justify-between w-full bg-card px-6 py-2 gap-4 overflow-x-auto">
       
       {/* Title & Circular Gauge */}
-      <div className="flex items-center gap-4 shrink-0">
-        <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
-          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+          <svg className="w-full h-full transform -rotate-90" viewBox="0 0 80 80">
             <circle
-              cx="50"
-              cy="50"
-              r="40"
+              cx="40"
+              cy="40"
+              r="30"
               fill="transparent"
               stroke="rgba(255,255,255,0.1)"
-              strokeWidth="8"
+              strokeWidth="6"
             />
             <circle
-              cx="50"
-              cy="50"
-              r="40"
+              cx="40"
+              cy="40"
+              r="30"
               fill="transparent"
               stroke="#10b981"
-              strokeWidth="8"
+              strokeWidth="6"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
               className="transition-all duration-1000 ease-out"
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-xl font-bold text-white leading-none">{Math.round(data.download)}</span>
-            <span className="text-[10px] text-gray-400 font-semibold mt-1">Mbps</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center mt-0.5">
+            <span className="text-sm font-bold text-white leading-none">{Math.round(data.download)}</span>
+            <span className="text-[8px] text-gray-400 font-semibold">Mbps</span>
           </div>
         </div>
         
-        <div className="flex flex-col">
-          <h2 className="text-xl md:text-2xl font-black text-white tracking-tight font-serif italic">
+        <div className="flex flex-col justify-center">
+          <h2 className="text-lg md:text-xl font-black text-white tracking-tight font-serif italic leading-tight">
             {isNational ? "საქართველოს" : data.name}
           </h2>
-          <span className="text-sm md:text-base font-bold text-gray-400">Speedtest დაშბორდი</span>
+          <span className="text-xs font-bold text-gray-400 leading-tight">Speedtest დაშბორდი</span>
         </div>
       </div>
 
-      <div className="w-px h-16 bg-white/10 mx-2 shrink-0 hidden md:block"></div>
+      <div className="w-px h-10 bg-white/10 mx-2 shrink-0 hidden md:block"></div>
 
       {/* Cards */}
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3 w-[140px] flex flex-col justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase">
-            <ArrowDown size={12} className="text-emerald-400" />
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[130px] flex flex-col justify-center">
+          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
+            <ArrowDown size={10} className="text-emerald-400" />
             ჩამოტვირთვა
           </div>
-          <div className="mt-1 flex flex-col">
-            <span className="text-xl font-black text-emerald-400">
-              {data.download.toFixed(1)} <span className="text-[11px] font-bold">Mbps</span>
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-base font-black text-emerald-400 leading-none">
+              {data.download.toFixed(1)} <span className="text-[10px] font-bold">Mbps</span>
             </span>
-            {renderYoY(yoyData?.download)}
           </div>
+          <div className="mt-0.5">{renderYoY(yoyData?.download)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3 w-[140px] flex flex-col justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase">
-            <ArrowUp size={12} className="text-blue-400" />
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[130px] flex flex-col justify-center">
+          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
+            <ArrowUp size={10} className="text-blue-400" />
             ატვირთვა
           </div>
-          <div className="mt-1 flex flex-col">
-            <span className="text-xl font-black text-blue-400">
-              {data.upload.toFixed(1)} <span className="text-[11px] font-bold">Mbps</span>
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-base font-black text-blue-400 leading-none">
+              {data.upload.toFixed(1)} <span className="text-[10px] font-bold">Mbps</span>
             </span>
-            {renderYoY(yoyData?.upload)}
           </div>
+          <div className="mt-0.5">{renderYoY(yoyData?.upload)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3 w-[140px] flex flex-col justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase">
-            <Activity size={12} className="text-purple-400" />
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[130px] flex flex-col justify-center">
+          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
+            <Activity size={10} className="text-purple-400" />
             PING
           </div>
-          <div className="mt-1 flex flex-col">
-            <span className="text-xl font-black text-purple-400">
-              {Math.round(data.ping)} <span className="text-[11px] font-bold">ms</span>
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-base font-black text-purple-400 leading-none">
+              {Math.round(data.ping)} <span className="text-[10px] font-bold">ms</span>
             </span>
-            {renderYoY(yoyData?.ping, true)}
           </div>
+          <div className="mt-0.5">{renderYoY(yoyData?.ping, true)}</div>
         </div>
 
-        <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3 w-[140px] flex flex-col justify-between">
-          <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase">
-            <Hash size={12} className="text-orange-400" />
+        <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[110px] flex flex-col justify-center">
+          <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
+            <Hash size={10} className="text-orange-400" />
             ტესტები
           </div>
-          <div className="mt-1 flex flex-col">
-            <span className="text-xl font-black text-orange-400">
+          <div className="flex items-baseline gap-1 mt-0.5">
+            <span className="text-base font-black text-orange-400 leading-none">
               {data.tests.toLocaleString()}
             </span>
           </div>
         </div>
 
         {data.devices !== undefined && (
-          <div className="bg-slate-800/50 border border-white/5 rounded-xl p-3 w-[140px] flex flex-col justify-between">
-            <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-bold uppercase">
-              <Laptop size={12} className="text-cyan-400" />
-              მოწყობილობები
+          <div className="bg-slate-800/50 border border-white/5 rounded-lg px-3 py-1.5 w-[110px] flex flex-col justify-center">
+            <div className="flex items-center gap-1.5 text-[9px] text-gray-400 font-bold uppercase">
+              <Laptop size={10} className="text-cyan-400" />
+              მოწყ.
             </div>
-            <div className="mt-1 flex flex-col">
-              <span className="text-xl font-black text-cyan-400">
+            <div className="flex items-baseline gap-1 mt-0.5">
+              <span className="text-base font-black text-cyan-400 leading-none">
                 {data.devices.toLocaleString()}
               </span>
             </div>
