@@ -111,8 +111,19 @@ export default function App() {
   }, []);
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-dark text-white font-sans">
-      {isLoading && (
+    <div className="flex flex-col w-full h-screen overflow-hidden bg-dark text-white font-sans">
+      {/* Desktop-Only Top Header */}
+      <div className="hidden md:block w-full shrink-0 z-[1001] bg-card border-b border-white/10">
+        <HeaderCards 
+          data={selectedData || nationalAverage} 
+          trendData={trendData} 
+          selectedPeriod={selectedPeriod} 
+          isNational={!selectedData} 
+        />
+      </div>
+      
+      <div className="relative flex-1 w-full overflow-hidden">
+        {isLoading && (
         <div className="absolute inset-0 z-[2000] bg-dark/80 backdrop-blur-sm flex flex-col items-center justify-center">
           <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
           <p className="font-sans text-gray-400 animate-pulse">მონაცემების ჩატვირთვა...</p>
@@ -193,20 +204,10 @@ export default function App() {
         </div>
       </div>
 
-      {/* Desktop-Only Header Cards */}
-      <div className="absolute top-4 left-[330px] right-4 z-[999] hidden md:flex items-start justify-start pointer-events-none">
-        <div className="pointer-events-auto w-full">
-          <HeaderCards 
-            data={selectedData || nationalAverage} 
-            trendData={trendData} 
-            selectedPeriod={selectedPeriod} 
-            isNational={!selectedData} 
-          />
-        </div>
-      </div>
+      {/* Desktop-Only Header Cards removed from here */}
 
       {/* Desktop-Only Cohesive Controls */}
-      <div className="absolute top-[130px] left-[330px] z-[1000] hidden md:flex flex-row items-center gap-3 pointer-events-none">
+      <div className="absolute top-4 left-[330px] z-[1000] hidden md:flex flex-row items-center gap-3 pointer-events-none">
         <div className="flex gap-2 pointer-events-auto">
           {/* View Type Toggle */}
           <div className="bg-card border border-white/10 rounded-xl p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0">
@@ -254,7 +255,7 @@ export default function App() {
       </div>
 
       {/* Desktop-Only Metric Selector Tabs */}
-      <div className="absolute top-[130px] right-4 z-[1000] hidden md:flex bg-card rounded-xl p-1 gap-1 border border-white/10 shadow-xl backdrop-blur-xl font-sans">
+      <div className="absolute top-4 right-4 z-[1000] hidden md:flex bg-card rounded-xl p-1 gap-1 border border-white/10 shadow-xl backdrop-blur-xl font-sans">
         <button 
           onClick={() => setActiveMetric('download')}
           className={`px-3 py-2 rounded-lg text-xs font-semibold transition-colors ${activeMetric === 'download' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
@@ -304,6 +305,7 @@ export default function App() {
         selectedPeriod={selectedPeriod}
         onSelectPeriod={setSelectedPeriod}
       />
+      </div>
     </div>
   );
 }
