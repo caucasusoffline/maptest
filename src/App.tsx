@@ -131,8 +131,8 @@ export default function App() {
         />
         
         {/* Timeline Divider Area */}
-        <div className="w-full bg-[#111827] px-6 py-1.5 border-y border-[#1f2937] flex justify-center items-center shadow-md">
-          <div className="flex items-center gap-4 w-full max-w-7xl mx-auto">
+        <div className="w-full bg-[#111827] px-4 md:px-6 py-1.5 border-y border-[#1f2937] flex justify-start md:justify-center items-center shadow-md overflow-x-auto hide-scrollbar">
+          <div className="flex items-center gap-2 md:gap-4 w-max md:w-full max-w-7xl mx-auto">
             <TimelineSlider 
               periods={availablePeriods}
               selectedPeriod={selectedPeriod}
