@@ -120,9 +120,9 @@ export default function App() {
   }, []);
 
   return (
-    <div className="flex flex-col w-full min-h-screen bg-dark text-white font-sans">
+    <div className="flex flex-col w-full h-screen overflow-y-auto bg-dark text-white font-sans">
       {/* Desktop-Only Top Header */}
-      <div className="hidden md:flex flex-col w-full shrink-0 z-[1001] bg-card">
+      <div className="hidden md:flex flex-col w-full shrink-0 sticky top-0 z-[2000] bg-card shadow-lg">
         <HeaderCards 
           data={nationalAverage} 
           trendData={connectionType === 'fixed' ? trendFixed : trendMobile} 
