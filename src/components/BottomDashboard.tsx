@@ -72,7 +72,7 @@ export function BottomDashboard({
   const title = selectedMuni || 'საქართველო';
 
   return (
-    <div className="w-full h-[600px] md:h-[500px] bg-[#0d1117] flex flex-col md:flex-row border-t border-white/10 z-[1000] text-white">
+    <div className="w-full h-[600px] md:h-[500px] shrink-0 bg-[#0d1117] flex flex-col md:flex-row border-t border-white/10 z-[1000] text-white">
       {/* Left Panel: Municipalities */}
       <div className="w-full md:w-[350px] border-r border-white/10 flex flex-col shrink-0 bg-[#0d1117]">
         <div className="p-4 border-b border-white/10 flex flex-col gap-4 shrink-0">
