@@ -27,19 +27,25 @@ export function BottomDashboard({
 
   // Extract municipality data from geoData
   const munis = useMemo(() => {
-    let result = geoData
-      .map(f => f.properties as SpeedTestData)
-      .filter(m => m.name !== 'საქართველო' && m.name.toLowerCase().includes(search.toLowerCase()));
-
-    // Deduplicate by name to prevent multiple entries for the same municipality
+    const searchLower = search.toLowerCase();
     const uniqueMap = new Map<string, SpeedTestData>();
-    result.forEach(m => {
+
+    // Single loop for filtering and deduplication (Optimized)
+    for (let i = 0; i < geoData.length; i++) {
+      const m = geoData[i].properties as SpeedTestData;
       const name = (m.name || "").trim();
-      if (name) {
-        uniqueMap.set(name, { ...m, name });
+      
+      if (name && name !== 'საქართველო') {
+        if (!searchLower || name.toLowerCase().includes(searchLower)) {
+          // Keep the first found feature for the municipality
+          if (!uniqueMap.has(name)) {
+            uniqueMap.set(name, m);
+          }
+        }
       }
-    });
-    result = Array.from(uniqueMap.values());
+    }
+
+    const result = Array.from(uniqueMap.values());
 
     result.sort((a, b) => {
       const aVal = a[sortConfig.key] || 0;
@@ -77,18 +83,25 @@ export function BottomDashboard({
 
   const combinedTrend = useMemo(() => {
     // combine fixed and mobile by quarter
-    const map = new Map<string, any>();
-    currentFixedTrend.forEach((t: any) => {
-      map.set(t.quarter, { quarter: t.quarter, fixedPing: t.ping, fixedTests: t.tests || 0 });
-    });
-    currentMobileTrend.forEach((t: any) => {
-      if (map.has(t.quarter)) {
-        map.set(t.quarter, { ...map.get(t.quarter), mobilePing: t.ping, mobileTests: t.tests || 0 });
+    const trendMap = new Map<string, any>();
+    
+    for (let i = 0; i < currentFixedTrend.length; i++) {
+      const t = currentFixedTrend[i];
+      trendMap.set(t.quarter, { quarter: t.quarter, fixedPing: t.ping, fixedTests: t.tests || 0 });
+    }
+    
+    for (let i = 0; i < currentMobileTrend.length; i++) {
+      const t = currentMobileTrend[i];
+      const existing = trendMap.get(t.quarter);
+      if (existing) {
+        existing.mobilePing = t.ping;
+        existing.mobileTests = t.tests || 0;
       } else {
-        map.set(t.quarter, { quarter: t.quarter, mobilePing: t.ping, mobileTests: t.tests || 0 });
+        trendMap.set(t.quarter, { quarter: t.quarter, mobilePing: t.ping, mobileTests: t.tests || 0 });
       }
-    });
-    return Array.from(map.values()).sort((a: any, b: any) => a.quarter.localeCompare(b.quarter));
+    }
+    
+    return Array.from(trendMap.values()).sort((a: any, b: any) => a.quarter.localeCompare(b.quarter));
   }, [currentFixedTrend, currentMobileTrend]);
 
   const formatPeriod = (p: string) => {
