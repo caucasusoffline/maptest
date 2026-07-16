@@ -33,7 +33,12 @@ export function BottomDashboard({
 
     // Deduplicate by name to prevent multiple entries for the same municipality
     const uniqueMap = new Map<string, SpeedTestData>();
-    result.forEach(m => uniqueMap.set(m.name, m));
+    result.forEach(m => {
+      const name = (m.name || "").trim();
+      if (name) {
+        uniqueMap.set(name, { ...m, name });
+      }
+    });
     result = Array.from(uniqueMap.values());
 
     result.sort((a, b) => {
