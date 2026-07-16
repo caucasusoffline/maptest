@@ -319,6 +319,7 @@ def generate_trends(georgia_municipalities: gpd.GeoDataFrame) -> None:
                         "download": stats["download"],
                         "upload": stats["upload"],
                         "ping": stats["ping"],
+                        "tests": stats.get("tests", 0),
                         "timestamp": timestamp
                     })
                     
@@ -328,6 +329,7 @@ def generate_trends(georgia_municipalities: gpd.GeoDataFrame) -> None:
                     "download": round(tot_d / tot_tests, 1),
                     "upload": round(tot_u / tot_tests, 1),
                     "ping": int(round(tot_p / tot_tests, 0)),
+                    "tests": tot_tests,
                     "timestamp": timestamp
                 })
                 
