@@ -28,7 +28,7 @@ export default function App() {
   const [trendFixed, setTrendFixed] = useState<any>(null);
   const [trendMobile, setTrendMobile] = useState<any>(null);
 
-  // Fetch metadata once
+  // Fetch metadata onc
   useEffect(() => {
     getMetadataApi()
       .then(meta => {
