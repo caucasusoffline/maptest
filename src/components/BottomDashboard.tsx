@@ -31,6 +31,11 @@ export function BottomDashboard({
       .map(f => f.properties as SpeedTestData)
       .filter(m => m.name !== 'საქართველო' && m.name.toLowerCase().includes(search.toLowerCase()));
 
+    // Deduplicate by name to prevent multiple entries for the same municipality
+    const uniqueMap = new Map<string, SpeedTestData>();
+    result.forEach(m => uniqueMap.set(m.name, m));
+    result = Array.from(uniqueMap.values());
+
     result.sort((a, b) => {
       const aVal = a[sortConfig.key] || 0;
       const bVal = b[sortConfig.key] || 0;
