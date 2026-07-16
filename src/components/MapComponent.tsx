@@ -21,7 +21,6 @@ interface MapComponentProps {
 function GeoJsonLayer({ geoData, dataVersion, onFeatureHover, onFeatureOut, activeMetric, selectedFeatureName, zoomBounds, viewType, connectionType }: MapComponentProps) {
   const map = useMap();
   const geoJsonRef = useRef<L.GeoJSON>(null);
-
   const previouslySelectedLayerRef = useRef<any>(null);
 
   const getStyleForFeature = (feature: any) => {
@@ -74,7 +73,6 @@ function GeoJsonLayer({ geoData, dataVersion, onFeatureHover, onFeatureOut, acti
       mouseout: resetHighlight,
       click: zoomToFeature
     });
-
     if (feature.properties.download > 0) {
       layer.bindPopup(`
         <div class="text-sm font-semibold mb-1 font-sans">${feature.properties.name}</div>
@@ -94,12 +92,17 @@ function GeoJsonLayer({ geoData, dataVersion, onFeatureHover, onFeatureOut, acti
     });
   };
 
+  // Avoid rebuilds: update GeoJSON data directly
   useEffect(() => {
-    if (geoData.length > 0 && geoJsonRef.current) {
+    if (geoJsonRef.current && geoData.length > 0) {
+      previouslySelectedLayerRef.current = null;
+      geoJsonRef.current.clearLayers();
+      geoJsonRef.current.addData(geoData as any);
+      geoJsonRef.current.setStyle(style);
       map.fitBounds(geoJsonRef.current.getBounds(), { padding: [20, 20], maxZoom: viewType === 'points' ? 10 : 8 });
     }
-  }, [viewType, map]); // Recenter map if viewType changes to 'points' or back
-  
+  }, [geoData, viewType, connectionType]);
+
   // React to explicit zoom requests
   useEffect(() => {
     if (zoomBounds) {
@@ -166,7 +169,6 @@ function GeoJsonLayer({ geoData, dataVersion, onFeatureHover, onFeatureOut, acti
 
   return (
     <GeoJSON
-      key={`${viewType}-${connectionType}-${geoData.length}-${dataVersion}`} // Re-render when data or view type changes
       ref={geoJsonRef}
       data={geoData as any}
       style={style}
