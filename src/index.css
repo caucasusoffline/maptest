@@ -52,13 +52,13 @@ body, html {
 /* Move Leaflet controls to avoid overlaps */
 .leaflet-bottom.leaflet-left {
   bottom: 20px;
-  left: 330px; /* Sidebar width (300px) + margin (16px) + gap */
+  left: 10px; /* Sidebar width (300px) + margin (16px) + gap */
   transition: left 0.3s ease;
 }
 
 @media (max-width: 767px) {
   .leaflet-bottom.leaflet-left {
-    bottom: 45vh; /* Above the mobile sidebar */
+    bottom: 20px; /* Above the mobile sidebar */
     margin-bottom: 20px;
     left: 10px;
   }
