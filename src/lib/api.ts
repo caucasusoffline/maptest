@@ -187,10 +187,13 @@ async function loadPeriodData(type: string, periodId: string): Promise<LoadedPer
           const parsed = await pointsRes.json();
           if (parsed && parsed.features) {
             points = parsed;
-            points.features.forEach((f: any, idx: number) => {
-              if (!f.properties.name) f.properties.name = `ზონა #${idx + 1}`;
+            const features = points.features;
+            // Optimized loop for modifying point features
+            for (let i = 0; i < features.length; i++) {
+              const f = features[i] as any;
+              if (!f.properties.name) f.properties.name = `ზონა #${i + 1}`;
               f.properties.locations = 1;
-            });
+            }
           }
         } catch (e) {
           console.error("Error parsing points json", e);
@@ -204,7 +207,12 @@ async function loadPeriodData(type: string, periodId: string): Promise<LoadedPer
           
           // Map aggregate data onto the base municipality GeoJSON
           if (geoCache.rawMuni && geoCache.rawMuni.features) {
-            const features = geoCache.rawMuni.features.map((m: any) => {
+            const rawFeatures = geoCache.rawMuni.features;
+            const features = new Array(rawFeatures.length);
+            
+            // Optimized loop
+            for (let i = 0; i < rawFeatures.length; i++) {
+              const m = rawFeatures[i] as any;
               const muniName = m.properties.muni_name;
               const stats = aggDict[muniName] || {
                 download: 0, download_max: 0, download_min: 0,
@@ -213,7 +221,7 @@ async function loadPeriodData(type: string, periodId: string): Promise<LoadedPer
                 tests: 0, devices: 0, locations: 0
               };
               
-              return {
+              features[i] = {
                 ...m,
                 properties: {
                   ...m.properties,
@@ -221,7 +229,7 @@ async function loadPeriodData(type: string, periodId: string): Promise<LoadedPer
                   ...stats
                 }
               };
-            });
+            }
 
             aggData = {
               type: "FeatureCollection",
