@@ -57,7 +57,7 @@ export function getColor(value: number, metric: 'download' | 'upload' | 'ping' =
 
 export function getNationalAverage(data: MunicipalityFeature[]): SpeedTestData {
   if (!data || data.length === 0) return { 
-    name: "საშუალო", download: 0, upload: 0, ping: 0, tests: 0, devices: 0
+    name: "საშუალო", download: 0, upload: 0, ping: 0, tests: 0, devices: 0 
   };
   
   let totalDown = 0, totalUp = 0, totalPing = 0, totalTests = 0, totalDevices = 0, totalLocations = 0;
@@ -66,7 +66,8 @@ export function getNationalAverage(data: MunicipalityFeature[]): SpeedTestData {
   let minPing = Infinity, maxPing = 0;
   let count = 0;
   
-  data.forEach(f => {
+  for (let i = 0; i < data.length; i++) {
+    const f = data[i];
     if (f.properties.download > 0) {
       totalDown += f.properties.download;
       totalUp += f.properties.upload;
@@ -86,7 +87,7 @@ export function getNationalAverage(data: MunicipalityFeature[]): SpeedTestData {
 
       count++;
     }
-  });
+  }
   
   if (count === 0) count = 1;
 
