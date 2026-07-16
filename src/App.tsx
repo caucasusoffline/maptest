@@ -180,6 +180,28 @@ export default function App() {
                 Ping
               </button>
             </div>
+            {/* View Type Toggle */}
+            <div className="bg-card border border-white/10 rounded-lg p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0 h-full">
+              <button
+                onClick={() => setViewType('municipality')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  viewType === 'municipality' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+                title="მუნიციპალიტეტები"
+              >
+                მუნიციპალიტეტები
+              </button>
+              <button
+                onClick={() => setViewType('points')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                  viewType === 'points' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+                title="წერტილოვანი"
+              >
+                <Layers size={14} />
+                წერტილები
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -196,27 +218,6 @@ export default function App() {
       <div className="absolute top-2 left-2 right-2 z-[1000] flex flex-col gap-1.5 p-1.5 bg-card/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-xl md:hidden font-sans">
         {/* Row 1: Toggles */}
         <div className="flex gap-1.5 w-full">
-          {/* View Type Toggle */}
-          <div className="bg-slate-800/60 p-0.5 rounded-lg flex items-center flex-1 border border-white/5">
-            <button
-              onClick={() => setViewType('municipality')}
-              className={`px-1 py-1 text-[9px] font-bold rounded-md transition-all flex-1 text-center ${
-                viewType === 'municipality' ? 'bg-primary/25 text-primary' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              რაიონები
-            </button>
-            <button
-              onClick={() => setViewType('points')}
-              className={`px-1 py-1 text-[9px] font-bold rounded-md transition-all flex-1 text-center flex items-center justify-center gap-0.5 ${
-                viewType === 'points' ? 'bg-primary/25 text-primary' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Layers size={9} />
-              წერტილები
-            </button>
-          </div>
-
           {/* Connection Type Toggle */}
           <div className="bg-slate-800/60 p-0.5 rounded-lg flex items-center flex-1 border border-white/5">
             <button
@@ -269,33 +270,6 @@ export default function App() {
       {/* Desktop-Only Header Cards removed from here */}
 
       {/* Desktop-Only Cohesive Controls */}
-      <div className="absolute top-4 left-[330px] z-[1000] hidden md:flex flex-row items-center gap-3 pointer-events-none">
-        <div className="flex gap-2 pointer-events-auto">
-          {/* View Type Toggle */}
-          <div className="bg-card border border-white/10 rounded-xl p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0">
-            <button
-              onClick={() => setViewType('municipality')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                viewType === 'municipality' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
-              }`}
-              title="მუნიციპალიტეტები"
-            >
-              მუნიციპალიტეტები
-            </button>
-            <button
-              onClick={() => setViewType('points')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
-                viewType === 'points' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
-              }`}
-              title="წერტილოვანი"
-            >
-              <Layers size={14} />
-              წერტილები
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Desktop-Only Metric Selector Tabs removed from here */}
       
       <div className="relative w-full h-[65vh] min-h-[400px] shrink-0 z-0">
@@ -316,7 +290,7 @@ export default function App() {
       </div>
       
       <BottomDashboard 
-        geoData={displayData}
+        geoData={activeSettings.viewType === 'points' ? baseMuniData : displayData}
         trendFixed={trendFixed}
         trendMobile={trendMobile}
         selectedMuni={selectedDataName}
