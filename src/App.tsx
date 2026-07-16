@@ -1,294 +1,304 @@
-const muniNameMap: Record<string, string> = { "მცხეთის": "მცხეთა", "ახმეტის": "ახმეტა", "თელავის": "თელავი", "გურჯაანის": "გურჯაანი", "ყვარლის": "ყვარელი", "სიღნაღის": "სიღნაღი", "დედოფლისწყაროს": "დედოფლისწყარო", "ლაგოდეხის": "ლაგოდეხი", "საგარეჯოს": "საგარეჯო", "თიანეთის": "თიანეთი", "დუშეთის": "დუშეთი", "ყაზბეგის": "ყაზბეგი", "კასპის": "კასპი", "გორის": "გორი", "ქარელის": "ქარელი", "ხაშურის": "ხაშური", "ბორჯომის": "ბორჯომი", "ახალციხის": "ახალციხე", "ადიგენის": "ადიგენი", "ასპინძის": "ასპინძა", "ახალქალაქის": "ახალქალაქი", "ნინოწმინდის": "ნინოწმინდა", "წალკის": "წალკა", "დმანისის": "დმანისი", "ბოლნისის": "ბოლნისი", "მარნეულის": "მარნეული", "გარდაბნის": "გარდაბანი", "თეთრიწყაროს": "თეთრიწყარო", "ონისა": "ონი", "ონის": "ონი", "ამბროლაურის": "ამბროლაური", "ცაგერის": "ცაგერი", "ლენტეხის": "ლენტეხი", "მესტიის": "მესტია", "საჩხერის": "საჩხერე", "ჭიათურის": "ჭიათურა", "ხარაგაულის": "ხარაგაული", "ზესტაფონის": "ზესტაფონი", "ბაღდათის": "ბაღდათი", "ვანის": "ვანი", "სამტრედიის": "სამტრედია", "ხონის": "ხონი", "წყალტუბოს": "წყალტუბო", "ტყიბულის": "ტყიბული", "თერჯოლის": "თერჯოლა", "ოზურგეთის": "ოზურგეთი", "ლანჩხუთის": "ლანჩხუთი", "ჩოხატაურის": "ჩოხატაური", "აბაშის": "აბაშა", "სენაკის": "სენაკი", "მარტვილის": "მარტვილი", "ხობის": "ხობი", "ზუგდიდის": "ზუგდიდი", "წალენჯიხის": "წალენჯიხა", "ჩხოროწყუს": "ჩხოროწყუ", "ბათუმის": "ბათუმი", "ქედის": "ქედა", "ქობულეთის": "ქობულეთი", "შუახევის": "შუახევი", "ხელვაჩაურის": "ხელვაჩაური", "ხულოს": "ხულო", "გულრიფშის": "გულრიფში", "გალის": "გალი", "ოჩამჩირის": "ოჩამჩირე", "სოხუმის": "სოხუმი", "გუდაუთის": "გუდაუთა", "გაგრის": "გაგრა", "ცხინვალის": "ცხინვალი", "ჯავის": "ჯავა", "ახალგორის": "ახალგორი", "ზნაურის": "ზნაური" };
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { BottomDashboard } from "./components/BottomDashboard";
+import { Legend } from "./components/Legend";
+import { MapComponent } from "./components/MapComponent";
+import { TimelineSlider } from "./components/TimelineSlider";
+import { HeaderCards } from "./components/HeaderCards";
+import { MunicipalityFeature, SpeedTestData, MetricType } from "./types";
+import { fetchGeoData, getNationalAverage } from "./utils";
+import { Layers } from "lucide-react";
+import * as turf from "@turf/turf";
 
-export function normalizeMuniName(name: string): string {
-  if (!name) return "უცნობი მუნიციპალიტეტი";
-  const n = name.replace(/ რაიონი$/, "").replace(/ მუნიციპალიტეტი$/, "").trim();
-  return muniNameMap[n] || n;
-}
+import { getMetadataApi, getTrendApi } from "./lib/api";
 
-export interface NationalTrend {
-  quarter: string;
-  download: number;
-  upload: number;
-  ping: number;
-  timestamp: number;
-}
+export default function App() {
+  const [connectionType, setConnectionType] = useState<'fixed' | 'mobile'>('fixed');
+  const [viewType, setViewType] = useState<'municipality' | 'points'>('municipality');
+  const [activeSettings, setActiveSettings] = useState({ connectionType: 'fixed', viewType: 'municipality' });
+  const [geoData, setGeoData] = useState<MunicipalityFeature[]>([]);
+  const [baseMuniData, setBaseMuniData] = useState<MunicipalityFeature[]>([]);
+  const [dataVersion, setDataVersion] = useState(0);
+  const [selectedDataName, setSelectedDataName] = useState<string | null>(null);
+  const [zoomBounds, setZoomBounds] = useState<[[number, number], [number, number]] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeMetric, setActiveMetric] = useState<MetricType>('download');
+  const [nationalAverage, setNationalAverage] = useState<SpeedTestData | null>(null);
+  const [availablePeriods, setAvailablePeriods] = useState<string[]>([]);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('');
+  const [trendFixed, setTrendFixed] = useState<any>(null);
+  const [trendMobile, setTrendMobile] = useState<any>(null);
 
-export interface MuniTrend {
-  quarter: string;
-  download: number;
-  upload: number;
-  ping: number;
-  timestamp: number;
-}
-
-export interface TrendData {
-  national: NationalTrend[];
-  municipalities: Record<string, MuniTrend[]>;
-}
-
-export interface GeoCacheMetadata {
-  mobile: string[];
-  fixed: string[];
-  generated_at: string;
-}
-
-export interface LoadedPeriod {
-  points: any;
-  agg: any;
-  lastAccessed: number;
-}
-
-export interface GeoCache {
-  meta: GeoCacheMetadata | null;
-  rawMuni: any;
-  periods: Record<string, LoadedPeriod>;
-  trendFixed: TrendData | null;
-  trendMobile: TrendData | null;
-  ready: boolean;
-  trendPromises: Record<string, Promise<void> | null>;
-}
-
-const geoCache: GeoCache = {
-  meta: null,
-  rawMuni: null,
-  periods: {},
-  trendFixed: null,
-  trendMobile: null,
-  ready: false,
-  trendPromises: { fixed: null, mobile: null }
-};
-
-const activeLoads: Record<string, Promise<LoadedPeriod | null>> = {};
-const baseUrl = "https://raw.githubusercontent.com/caucasusoffline/georgia-speedtest-map/main/data/";
-
-async function fetchWithRetry(url: string, options?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
-  try {
-    const res = await fetch(url, options);
-    if (!res.ok) {
-      if (res.status === 404) {
-        throw new Error(`404 Not Found`);
-      }
-      throw new Error(`HTTP error! status: ${res.status}`);
-    }
-    return res;
-  } catch (err: any) {
-    if (retries <= 0 || (err.message && err.message.includes('404'))) throw err;
-    console.warn(`Fetch failed for ${url}. Retrying in ${delay}ms...`, err);
-    await new Promise(resolve => setTimeout(resolve, delay));
-    return fetchWithRetry(url, options, retries - 1, delay * 1.5);
-  }
-}
-
-function closeRings(geojson: any): any {
-  if (geojson.type === "FeatureCollection") {
-    geojson.features.forEach((f: any) => closeRings(f));
-  } else if (geojson.type === "Feature") {
-    closeRings(geojson.geometry);
-  } else if (geojson.type === "Polygon") {
-    geojson.coordinates.forEach((ring: any) => {
-      if (ring.length > 0) {
-        const first = ring[0];
-        const last = ring[ring.length - 1];
-        if (first[0] !== last[0] || first[1] !== last[1]) {
-          ring.push([...first]);
-        }
-      }
-    });
-  } else if (geojson.type === "MultiPolygon") {
-    geojson.coordinates.forEach((poly: any) => {
-      poly.forEach((ring: any) => {
-        if (ring.length > 0) {
-          const first = ring[0];
-          const last = ring[ring.length - 1];
-          if (first[0] !== last[0] || first[1] !== last[1]) {
-            ring.push([...first]);
+  // Fetch metadata once
+  useEffect(() => {
+    getMetadataApi()
+      .then(meta => {
+        if (meta && meta[connectionType]) {
+          const filtered = meta[connectionType].filter((p: string) => !p.includes('2018'));
+          const sorted = [...filtered].sort();
+          setAvailablePeriods(sorted);
+          if (!selectedPeriod || !sorted.includes(selectedPeriod)) {
+            setSelectedPeriod(sorted[sorted.length - 1]);
           }
         }
-      });
-    });
-  }
-  return geojson;
-}
+      })
+      .catch(err => console.error("Failed to load metadata", err));
+  }, [connectionType]);
 
-// Ensure init happens only once
-let initPromise: Promise<void> | null = null;
+  useEffect(() => {
+    let ignore = false;
+    const controller = new AbortController();
 
-export async function initClientData(): Promise<void> {
-  if (geoCache.ready) return;
-  if (initPromise) return initPromise;
+    async function loadData() {
+      if (!selectedPeriod) return; // Wait for metadata to load
 
-  initPromise = (async () => {
-    console.log("Fetching metadata...");
-    const metaRes = await fetchWithRetry(baseUrl + "metadata.json");
-    const meta: GeoCacheMetadata = await metaRes.json();
-    geoCache.meta = meta;
-    
-    console.log("Fetching muni shapes...");
-    const muniRes = await fetchWithRetry("https://raw.githubusercontent.com/caucasusoffline/georgia-speedtest-map/main/municipality.geojson");
-    let rawMuni = await muniRes.json();
-    rawMuni = closeRings(rawMuni);
-    
-    // Pre-normalize names in the base GeoJSON
-    rawMuni.features.forEach((f: any) => {
-      const originalName = f.properties.NAME_2 || f.properties.NAME_1 || f.properties.name;
-      f.properties.muni_name = normalizeMuniName(originalName);
-    });
-    
-    geoCache.rawMuni = rawMuni;
-    geoCache.ready = true;
-    console.log("Map client data init complete."); 
-  })();
-
-  return initPromise;
-}
-
-export async function getMetadataApi() {
-  await initClientData();
-  return geoCache.meta;
-}
-
-async function loadPeriodData(type: string, periodId: string): Promise<LoadedPeriod | null> {
-  const cacheKey = `${type}_${periodId}`;
-  
-  if (geoCache.periods[cacheKey]) {
-    geoCache.periods[cacheKey].lastAccessed = Date.now();
-    return geoCache.periods[cacheKey];
-  }
-
-  if (activeLoads[cacheKey]) {
-    return activeLoads[cacheKey];
-  }
-
-  const loadPromise = (async (): Promise<LoadedPeriod | null> => {
-    // Cache management
-    const keys = Object.keys(geoCache.periods);
-    if (keys.length >= 10) {
-      let oldestKey = keys[0];
-      let oldestTime = geoCache.periods[oldestKey].lastAccessed;
-      for (const key of keys) {
-        if (geoCache.periods[key].lastAccessed < oldestTime) {
-          oldestTime = geoCache.periods[key].lastAccessed;
-          oldestKey = key;
+      setIsLoading(true);
+      try {
+        const data = await fetchGeoData(connectionType, viewType, selectedPeriod, controller.signal);
+        
+        let muniData: MunicipalityFeature[] = [];
+        if (viewType === 'points') {
+          muniData = await fetchGeoData(connectionType, 'municipality', selectedPeriod, controller.signal);
         }
-      }
-      delete geoCache.periods[oldestKey];
-    }
 
-    try {
-      const [pointsRes, aggRes] = await Promise.all([
-        fetchWithRetry(baseUrl + `georgia_${type}_${periodId}.geojson`).catch(() => null),
-        fetchWithRetry(baseUrl + `georgia_${type}_${periodId}_agg.json`).catch(() => null)
-      ]);
-
-      let points = { type: "FeatureCollection", features: [] };
-      if (pointsRes) {
+        if (ignore) return;
+        setGeoData(data);
+        if (viewType === 'points') setBaseMuniData(muniData);
+        else setBaseMuniData([]);
+        
+        setActiveSettings({ connectionType, viewType });
+        setDataVersion(v => v + 1);
+        
+        // Fetch trend data
         try {
-          const parsed = await pointsRes.json();
-          if (parsed && parsed.features) {
-            points = parsed;
-            points.features.forEach((f: any, idx: number) => {
-              if (!f.properties.name) f.properties.name = `ზონა #${idx + 1}`;
-              f.properties.locations = 1;
-            });
+          const [tFixed, tMobile] = await Promise.all([
+            getTrendApi('fixed').catch(() => null),
+            getTrendApi('mobile').catch(() => null)
+          ]);
+          if (!ignore) {
+            setTrendFixed(tFixed);
+            setTrendMobile(tMobile);
           }
         } catch (e) {
-          console.error("Error parsing points json", e);
+          console.error("Trend endpoint error", e);
         }
-      }
-
-      let aggData = { type: "FeatureCollection", features: [] };
-      if (aggRes) {
-        try {
-          const aggDict = await aggRes.json();
-          
-          // Map aggregate data onto the base municipality GeoJSON
-          if (geoCache.rawMuni && geoCache.rawMuni.features) {
-            const features = geoCache.rawMuni.features.map((m: any) => {
-              const muniName = m.properties.muni_name;
-              const stats = aggDict[muniName] || {
-                download: 0, download_max: 0, download_min: 0,
-                upload: 0, upload_max: 0, upload_min: 0,
-                ping: 0, ping_max: 0, ping_min: 0,
-                tests: 0, devices: 0, locations: 0
-              };
-              
-              return {
-                ...m,
-                properties: {
-                  ...m.properties,
-                  name: muniName,
-                  ...stats
-                }
-              };
-            });
-
-            aggData = {
-              type: "FeatureCollection",
-              features
-            };
-          }
-        } catch (e) {
-          console.error("Error parsing agg json", e);
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          console.error("Error loading geo data:", error);
         }
+      } finally {
+        if (!ignore) setIsLoading(false);
       }
-
-      geoCache.periods[cacheKey] = { points, agg: aggData, lastAccessed: Date.now() };
-      return geoCache.periods[cacheKey];
-    } catch(e) {
-      console.error("Error loading period data", periodId, e);
-      return null;
-    } finally {
-      delete activeLoads[cacheKey];
     }
-  })();
+    
+    loadData();
+    return () => {
+      ignore = true;
+      controller.abort();
+    };
+  }, [connectionType, viewType, selectedPeriod]);
 
-  activeLoads[cacheKey] = loadPromise;
-  return loadPromise;
-}
+  const displayData = geoData;
 
-export async function getDataApi(type: 'fixed' | 'mobile', view: 'municipality' | 'points', periodId?: string) {
-  await initClientData();
-  const targetPeriod = periodId || geoCache.meta![type][0];
-  let periodData = geoCache.periods[`${type}_${targetPeriod}`];
-  
-  if (!periodData) {
-    periodData = (await loadPeriodData(type, targetPeriod)) as LoadedPeriod;
-  }
-  
-  return view === 'points' ? periodData.points : periodData.agg;
-}
-
-export async function getTrendApi(type: 'fixed' | 'mobile') {
-  await initClientData();
-  
-  if (type === 'fixed') {
-    if (!geoCache.trendFixed) {
-      if (!geoCache.trendPromises.fixed) {
-        geoCache.trendPromises.fixed = fetchWithRetry(baseUrl + "trend_fixed.json")
-          .then(res => res.json())
-          .then(data => { geoCache.trendFixed = data; })
-          .catch(err => {
-            console.warn("Fixed trends not found, using empty data.");
-            geoCache.trendFixed = { national: [], municipalities: {} };
-          });
-      }
-      await geoCache.trendPromises.fixed;
+  useEffect(() => {
+    if (displayData.length > 0) {
+      setNationalAverage(getNationalAverage(displayData));
     }
-    return geoCache.trendFixed;
-  } else {
-    if (!geoCache.trendMobile) {
-      if (!geoCache.trendPromises.mobile) {
-        geoCache.trendPromises.mobile = fetchWithRetry(baseUrl + "trend_mobile.json")
-          .then(res => res.json())
-          .then(data => { geoCache.trendMobile = data; })
-          .catch(err => {
-            console.warn("Mobile trends not found, using empty data.");
-            geoCache.trendMobile = { national: [], municipalities: {} };
-          });
-      }
-      await geoCache.trendPromises.mobile;
-    }
-    return geoCache.trendMobile;
-  }
+  }, [displayData]);
+
+  const selectedData = useMemo(() => {
+    if (!selectedDataName) return null;
+    return displayData.find(f => f.properties.name === selectedDataName)?.properties || null;
+  }, [displayData, selectedDataName]);
+
+
+  const handleFeatureHover = useCallback((data: SpeedTestData) => {
+    setSelectedDataName(data.name);
+  }, []);
+  
+  const handleFeatureOut = useCallback(() => {
+    setSelectedDataName(null);
+  }, []);
+
+  return (
+    <div className="flex flex-col w-full h-screen overflow-y-auto bg-dark text-white font-sans">
+      {/* Desktop-Only Top Header */}
+      <div className="hidden md:flex flex-col w-full shrink-0 sticky top-0 z-[2000] bg-card shadow-lg">
+        <HeaderCards 
+          data={nationalAverage} 
+          trendData={connectionType === 'fixed' ? trendFixed : trendMobile} 
+          selectedPeriod={selectedPeriod} 
+          isNational={true} 
+        />
+        
+        {/* Timeline Divider Area */}
+        <div className="w-full bg-[#111827] px-4 md:px-6 py-1.5 border-y border-[#1f2937] flex justify-start md:justify-center items-center shadow-md overflow-x-auto hide-scrollbar">
+          <div className="flex items-center gap-2 md:gap-4 w-max md:w-full max-w-7xl mx-auto">
+            <TimelineSlider 
+              periods={availablePeriods}
+              selectedPeriod={selectedPeriod}
+              onSelectPeriod={setSelectedPeriod}
+              className="flex-1 bg-card border border-white/10 rounded-lg px-4 py-1.5 flex items-center gap-4 text-white"
+            />
+            {/* Connection Type Toggle */}
+            <div className="bg-card border border-white/10 rounded-lg p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0 h-full">
+              <button
+                onClick={() => setConnectionType('fixed')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${
+                  connectionType === 'fixed' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                ფიქსირებული
+              </button>
+              <button
+                onClick={() => setConnectionType('mobile')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-all ${
+                  connectionType === 'mobile' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                მობილური
+              </button>
+            </div>
+            
+            {/* Metric Type Toggle */}
+            <div className="bg-card border border-white/10 rounded-lg p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0 h-full">
+              <button 
+                onClick={() => setActiveMetric('download')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-colors ${activeMetric === 'download' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+              >
+                ჩამოტვირთვა
+              </button>
+              <button 
+                onClick={() => setActiveMetric('upload')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-colors ${activeMetric === 'upload' ? 'bg-blue-500/20 text-blue-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+              >
+                ატვირთვა
+              </button>
+              <button 
+                onClick={() => setActiveMetric('ping')}
+                className={`px-4 py-1 text-xs font-semibold rounded-md transition-colors ${activeMetric === 'ping' ? 'bg-purple-500/20 text-purple-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+              >
+                Ping
+              </button>
+            </div>
+            {/* View Type Toggle */}
+            <div className="bg-card border border-white/10 rounded-lg p-1 flex items-center shadow-xl backdrop-blur-xl shrink-0 h-full">
+              <button
+                onClick={() => setViewType('municipality')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  viewType === 'municipality' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+                title="მუნიციპალიტეტები"
+              >
+                მუნიციპალიტეტები
+              </button>
+              <button
+                onClick={() => setViewType('points')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                  viewType === 'points' ? 'bg-primary/20 text-primary' : 'text-slate-400 hover:text-white'
+                }`}
+                title="წერტილოვანი"
+              >
+                <Layers size={14} />
+                წერტილები
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="relative flex-1 w-full flex flex-col">
+        {isLoading && (
+        <div className="absolute inset-0 z-[2000] bg-dark/80 backdrop-blur-sm flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></div>
+          <p className="font-sans text-gray-400 animate-pulse">მონაცემების ჩატვირთვა...</p>
+        </div>
+      )}
+      
+      {/* Mobile-Only Cohesive Control Panel */}
+      <div className="absolute top-2 left-2 right-2 z-[1000] flex flex-col gap-1.5 p-1.5 bg-card/95 border border-white/10 rounded-xl shadow-2xl backdrop-blur-xl md:hidden font-sans">
+        {/* Row 1: Toggles */}
+        <div className="flex gap-1.5 w-full">
+          {/* Connection Type Toggle */}
+          <div className="bg-slate-800/60 p-0.5 rounded-lg flex items-center flex-1 border border-white/5">
+            <button
+              onClick={() => setConnectionType('fixed')}
+              className={`px-1 py-1 text-[9px] font-bold rounded-md transition-all flex-1 text-center ${
+                connectionType === 'fixed' ? 'bg-primary/25 text-primary' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ფიქსირებული
+            </button>
+            <button
+              onClick={() => setConnectionType('mobile')}
+              className={`px-1 py-1 text-[9px] font-bold rounded-md transition-all flex-1 text-center ${
+                connectionType === 'mobile' ? 'bg-primary/25 text-primary' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              მობილური
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Metrics & Period */}
+        <div className="flex gap-1.5 w-full items-center">
+          {/* Metric selector tabs */}
+          <div className="bg-slate-800/60 p-0.5 rounded-lg flex items-center flex-1 border border-white/5 gap-0.5">
+            <button 
+              onClick={() => setActiveMetric('download')}
+              className={`px-1 py-1 rounded-md text-[9px] font-bold transition-colors flex-1 text-center ${activeMetric === 'download' ? 'bg-emerald-500/20 text-emerald-400' : 'text-gray-400 hover:text-white'}`}
+            >
+              ჩამოტვირთვა
+            </button>
+            <button 
+              onClick={() => setActiveMetric('upload')}
+              className={`px-1 py-1 rounded-md text-[9px] font-bold transition-colors flex-1 text-center ${activeMetric === 'upload' ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400 hover:text-white'}`}
+            >
+              ატვირთვა
+            </button>
+            <button 
+              onClick={() => setActiveMetric('ping')}
+              className={`px-1 py-1 rounded-md text-[9px] font-bold transition-colors flex-1 text-center ${activeMetric === 'ping' ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white'}`}
+            >
+              Ping
+            </button>
+          </div>
+
+          {/* Period dropdown removed from mobile view */}
+        </div>
+      </div>
+
+      {/* Desktop-Only Header Cards removed from here */}
+
+      {/* Desktop-Only Cohesive Controls */}
+      {/* Desktop-Only Metric Selector Tabs removed from here */}
+      
+      <div className="relative w-full h-[45vh] md:h-[45vh] min-h-[300px] shrink-0 z-0">
+        <MapComponent 
+          geoData={displayData} 
+          baseMuniData={baseMuniData}
+          dataVersion={dataVersion}
+          onFeatureHover={handleFeatureHover} 
+          onFeatureOut={handleFeatureOut} 
+          activeMetric={activeMetric}
+          selectedFeatureName={selectedDataName || undefined}
+          zoomBounds={zoomBounds}
+          viewType={activeSettings.viewType as 'municipality' | 'points'}
+          connectionType={activeSettings.connectionType as 'fixed' | 'mobile'}
+        />
+        
+        <Legend activeMetric={activeMetric} connectionType={activeSettings.connectionType as 'fixed' | 'mobile'} />
+      </div>
+      
+      <BottomDashboard 
+        geoData={activeSettings.viewType === 'points' ? baseMuniData : displayData}
+        trendFixed={trendFixed}
+        trendMobile={trendMobile}
+        selectedMuni={selectedDataName}
+        onSelectMuni={setSelectedDataName}
+        connectionType={connectionType}
+        setConnectionType={setConnectionType}
+      />
+      </div>
+    </div>
+  );
 }
