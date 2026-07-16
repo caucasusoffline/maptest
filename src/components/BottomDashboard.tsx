@@ -23,14 +23,31 @@ export function BottomDashboard({
   setConnectionType
 }: BottomDashboardProps) {
   const [search, setSearch] = useState('');
+  const [sortConfig, setSortConfig] = useState<{ key: keyof SpeedTestData; direction: 'asc' | 'desc' }>({ key: 'download', direction: 'desc' });
 
   // Extract municipality data from geoData
   const munis = useMemo(() => {
-    return geoData
+    let result = geoData
       .map(f => f.properties as SpeedTestData)
-      .filter(m => m.name !== 'საქართველო' && m.name.toLowerCase().includes(search.toLowerCase()))
-      .sort((a, b) => b.download - a.download);
-  }, [geoData, search]);
+      .filter(m => m.name !== 'საქართველო' && m.name.toLowerCase().includes(search.toLowerCase()));
+
+    result.sort((a, b) => {
+      const aVal = a[sortConfig.key] || 0;
+      const bVal = b[sortConfig.key] || 0;
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [geoData, search, sortConfig]);
+
+  const handleSort = (key: keyof SpeedTestData) => {
+    setSortConfig(current => ({
+      key,
+      direction: current.key === key && current.direction === 'desc' ? 'asc' : 'desc'
+    }));
+  };
 
   const currentFixedTrend = useMemo(() => {
     if (!trendFixed) return [];
@@ -52,13 +69,13 @@ export function BottomDashboard({
     // combine fixed and mobile by quarter
     const map = new Map<string, any>();
     currentFixedTrend.forEach((t: any) => {
-      map.set(t.quarter, { quarter: t.quarter, fixedPing: t.ping, fixedTests: t.tests });
+      map.set(t.quarter, { quarter: t.quarter, fixedPing: t.ping, fixedTests: t.tests || 0 });
     });
     currentMobileTrend.forEach((t: any) => {
       if (map.has(t.quarter)) {
-        map.set(t.quarter, { ...map.get(t.quarter), mobilePing: t.ping, mobileTests: t.tests });
+        map.set(t.quarter, { ...map.get(t.quarter), mobilePing: t.ping, mobileTests: t.tests || 0 });
       } else {
-        map.set(t.quarter, { quarter: t.quarter, mobilePing: t.ping, mobileTests: t.tests });
+        map.set(t.quarter, { quarter: t.quarter, mobilePing: t.ping, mobileTests: t.tests || 0 });
       }
     });
     return Array.from(map.values()).sort((a: any, b: any) => a.quarter.localeCompare(b.quarter));
@@ -112,11 +129,21 @@ export function BottomDashboard({
           <table className="w-full text-xs text-left">
             <thead className="sticky top-0 bg-[#0d1117] border-b border-white/10 text-gray-500 uppercase font-bold text-[10px] z-10">
               <tr>
-                <th className="px-4 py-3">სახელი</th>
-                <th className="px-2 py-3 text-right text-emerald-500">DOWN ↓</th>
-                <th className="px-2 py-3 text-right text-blue-500">UP</th>
-                <th className="px-2 py-3 text-right text-purple-500">PING</th>
-                <th className="px-4 py-3 text-right">ტესტები</th>
+                <th className="px-4 py-3 cursor-pointer hover:text-white" onClick={() => handleSort('name')}>
+                  სახელი {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                </th>
+                <th className="px-2 py-3 text-right text-emerald-500 cursor-pointer hover:text-emerald-400" onClick={() => handleSort('download')}>
+                  DOWN {sortConfig.key === 'download' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                </th>
+                <th className="px-2 py-3 text-right text-blue-500 cursor-pointer hover:text-blue-400" onClick={() => handleSort('upload')}>
+                  UP {sortConfig.key === 'upload' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                </th>
+                <th className="px-2 py-3 text-right text-purple-500 cursor-pointer hover:text-purple-400" onClick={() => handleSort('ping')}>
+                  PING {sortConfig.key === 'ping' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                </th>
+                <th className="px-4 py-3 text-right cursor-pointer hover:text-white" onClick={() => handleSort('tests')}>
+                  ტესტები {sortConfig.key === 'tests' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -257,8 +284,8 @@ export function BottomDashboard({
             <h3 className="font-bold text-sm">{title} - ტესტების დინამიკა</h3>
           </div>
           <div className="flex justify-between text-[10px] text-gray-500 font-bold uppercase mb-4">
-            <div>ფიქს. ტესტები <span className="text-emerald-400 text-sm ml-1">{currentFixedTrend[currentFixedTrend.length-1]?.tests?.toLocaleString()}</span></div>
-            <div>მობ. ტესტები <span className="text-blue-400 text-sm ml-1">{currentMobileTrend[currentMobileTrend.length-1]?.tests?.toLocaleString()}</span></div>
+            <div>ფიქს. ტესტები <span className="text-emerald-400 text-sm ml-1">{(currentFixedTrend[currentFixedTrend.length-1]?.tests || 0).toLocaleString()}</span></div>
+            <div>მობ. ტესტები <span className="text-blue-400 text-sm ml-1">{(currentMobileTrend[currentMobileTrend.length-1]?.tests || 0).toLocaleString()}</span></div>
           </div>
           <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
