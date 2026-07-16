@@ -60,7 +60,7 @@ const geoCache: GeoCache = {
 };
 
 const activeLoads: Record<string, Promise<LoadedPeriod | null>> = {};
-const baseUrl = "https://raw.githubusercontent.com/caucasusoffline/georgia-speedtest-map/main/data/";
+const baseUrl = "https://raw.githubusercontent.com/caucasusoffline/maptest/main/data/";
 
 async function fetchWithRetry(url: string, options?: RequestInit, retries = 3, delay = 1500): Promise<Response> {
   try {
@@ -125,7 +125,7 @@ export async function initClientData(): Promise<void> {
     geoCache.meta = meta;
     
     console.log("Fetching muni shapes...");
-    const muniRes = await fetchWithRetry("https://raw.githubusercontent.com/caucasusoffline/georgia-speedtest-map/main/municipality.geojson");
+    const muniRes = await fetchWithRetry("https://raw.githubusercontent.com/caucasusoffline/maptest/main/municipality.geojson");
     let rawMuni = await muniRes.json();
     rawMuni = closeRings(rawMuni);
     
