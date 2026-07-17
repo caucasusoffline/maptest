@@ -62,7 +62,11 @@ function GeoJsonLayer({ geoData, dataVersion, onFeatureHover, onFeatureOut, acti
 
   const zoomToFeature = (e: L.LeafletMouseEvent) => {
     if (e.target.feature.properties.download > 0) {
-      map.fitBounds(e.target.getBounds(), { padding: [50, 50], maxZoom: viewType === 'points' ? 12 : 9 });
+      if (typeof e.target.getBounds === 'function') {
+        map.fitBounds(e.target.getBounds(), { padding: [50, 50], maxZoom: viewType === 'points' ? 12 : 9 });
+      } else if (typeof e.target.getLatLng === 'function') {
+        map.setView(e.target.getLatLng(), viewType === 'points' ? 12 : 9);
+      }
       onFeatureHover(e.target.feature.properties);
     }
   };
@@ -99,7 +103,10 @@ function GeoJsonLayer({ geoData, dataVersion, onFeatureHover, onFeatureOut, acti
       geoJsonRef.current.clearLayers();
       geoJsonRef.current.addData(geoData as any);
       geoJsonRef.current.setStyle(style);
-      map.fitBounds(geoJsonRef.current.getBounds(), { padding: [20, 20], maxZoom: viewType === 'points' ? 10 : 8 });
+      const bounds = geoJsonRef.current.getBounds();
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [20, 20], maxZoom: viewType === 'points' ? 10 : 8 });
+      }
     }
   }, [geoData, viewType, connectionType]);
 
