@@ -60,7 +60,10 @@ export function getNationalAverage(data: MunicipalityFeature[]): SpeedTestData {
     name: "საშუალო", download: 0, upload: 0, ping: 0, tests: 0, devices: 0 
   };
   
-  let totalDown = 0, totalUp = 0, totalPing = 0, totalTests = 0, totalDevices = 0, totalLocations = 0;
+  let totalDownWt = 0, totalUpWt = 0, totalPingWt = 0;
+  let totalTests = 0, totalDevices = 0, totalLocations = 0;
+  let sumWeights = 0;
+  
   let minDown = Infinity, maxDown = 0;
   let minUp = Infinity, maxUp = 0;
   let minPing = Infinity, maxPing = 0;
@@ -69,13 +72,17 @@ export function getNationalAverage(data: MunicipalityFeature[]): SpeedTestData {
   for (let i = 0; i < data.length; i++) {
     const f = data[i];
     if (f.properties.download > 0) {
-      totalDown += f.properties.download;
-      totalUp += f.properties.upload;
-      totalPing += f.properties.ping;
+      const weight = f.properties.tests || 1;
+
+      totalDownWt += f.properties.download * weight;
+      totalUpWt += f.properties.upload * weight;
+      totalPingWt += f.properties.ping * weight;
+      sumWeights += weight;
+
       totalTests += f.properties.tests || 0;
       totalDevices += f.properties.devices || 0;
       totalLocations += f.properties.locations || (f.geometry?.type === 'Point' ? 1 : 0) || 1;
-
+      
       if (f.properties.download_min !== undefined) minDown = Math.min(minDown, f.properties.download_min);
       if (f.properties.download_max !== undefined) maxDown = Math.max(maxDown, f.properties.download_max);
       
@@ -84,22 +91,21 @@ export function getNationalAverage(data: MunicipalityFeature[]): SpeedTestData {
       
       if (f.properties.ping_min !== undefined) minPing = Math.min(minPing, f.properties.ping_min);
       if (f.properties.ping_max !== undefined) maxPing = Math.max(maxPing, f.properties.ping_max);
-
       count++;
     }
   }
   
-  if (count === 0) count = 1;
+  const divisor = sumWeights > 0 ? sumWeights : 1;
 
   return {
     name: "ეროვნული საშუალო",
-    download: totalDown / count,
+    download: totalDownWt / divisor,
     download_min: minDown === Infinity ? 0 : minDown,
     download_max: maxDown,
-    upload: totalUp / count,
+    upload: totalUpWt / divisor,
     upload_min: minUp === Infinity ? 0 : minUp,
     upload_max: maxUp,
-    ping: totalPing / count,
+    ping: totalPingWt / divisor,
     ping_min: minPing === Infinity ? 0 : minPing,
     ping_max: maxPing,
     tests: totalTests,
